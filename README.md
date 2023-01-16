@@ -10,7 +10,7 @@ Tau is the angle between the chance of changing opinion from A to B and from B t
 
 <img alt="Image showing tau" src="docs/image.jpg">
 
-At $\tau = 0.25 \pi$, the system will converge to either A or B.
-At $\tau = 0.75 \pi$, the system will converge to opinion A.
-At $\tau = 1.25 \pi$, the system will not converge to one opinion.
-At $\tau = 1.75 \pi$, the system will converge to opinion B.
+- At $\tau = 0.25 \pi$, the system will converge to either A or B.
+- At $\tau = 0.75 \pi$, the system will converge to opinion A.
+- At $\tau = 1.25 \pi$, the system will not converge to one opinion.
+- At $\tau = 1.75 \pi$, the system will converge to opinion B.
