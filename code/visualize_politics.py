@@ -58,6 +58,12 @@ def grid_portrayal(agent):
 
 width = 3
 height = 3
+lambd=0.05,
+mu=0.20,
+d1=0.35,
+d2=1.5,
+mu_norm=0.5,
+sigma_norm=0.45
 
 grid = CanvasGrid(grid_portrayal, width, height, 500, 500)
 
