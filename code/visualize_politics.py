@@ -44,8 +44,8 @@ def grid_portrayal(agent):
     }
     return portrayal
 
-width = 3
-height = 3
+width = 10
+height = 10
 
 grid = CanvasGrid(grid_portrayal, width, height, 500, 500)
 
