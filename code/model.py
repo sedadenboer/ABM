@@ -10,6 +10,15 @@ import numpy as np
 
 from agents import Wappie
 
+# class Wappie(Agent):
+#     def __init__(self, unique_id: int, model: Model, pos, prior_beliefs) -> None:
+#         super().__init__(unique_id, model)
+#         self.beliefs = (self.random.random(), self.random.random())
+#         self.grid_pos = pos
+    
+#     def step(self):
+#         self.beliefs = (self.random.random(), self.random.random())
+
 class Political_spectrum(Model):
     def __init__(
         self,
@@ -52,24 +61,39 @@ class Political_spectrum(Model):
 
         self.grid = SingleGrid(width, height, torus=True)
 
+        self.agents = {}
         # create agents
         for i in range(num_agents):
             x = i // width
             y = i % width
             grid_pos = (x, y)
+            print(grid_pos)
 
                         # create prior beliefs
-            self.prog_cons = np.random.normal(mu_norm, sigma_norm)
-            self.left_right = np.random.normal(mu_norm, sigma_norm)
-            self.prior_beliefs = np.array([self.prog_cons, self.left_right])
+            prog_cons = np.random.normal(mu_norm, sigma_norm)
+            left_right = np.random.normal(mu_norm, sigma_norm)
+            prior_beliefs = np.array([prog_cons, left_right])
 
-            agent = Wappie(i, self, grid_pos, self.prior_beliefs)
+            agent = Wappie(unique_id=i, 
+                           model=self,
+                           grid_pos=grid_pos,
+                           prior_beliefs=prior_beliefs)
 
             self.grid.place_agent(agent, grid_pos)
+            print(agent.pos)
                 
             self.network.place_agent(agent, i)
+            print(agent.pos)
 
             self.schedule.add(agent)
+
+            self.agents[i] = agent
+
+        assert type(d1) == float
+        self.d1 = d1
+        self.d2 = d2
+        self.lambd = lambd
+        self.mu = mu
 
         self.running = True
 

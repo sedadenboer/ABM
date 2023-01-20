@@ -5,7 +5,7 @@ from model import Political_spectrum
 
 def network_portrayal(G):
     def node_color(agent):
-        return "red" if agent.opinion < 0.5 else "blue"
+        return "red" if agent.beliefs[0] < 0.5 else "blue"
     
     def edge_color(agent1, agent2):
         return "black"
@@ -19,7 +19,7 @@ def network_portrayal(G):
     portrayal = dict()
     portrayal["nodes"] = [{"size": 6,
                            "color": node_color(agents[0]),
-                           "tooltip": "id: {}<br>state: {}".format(agents[0].unique_id, agents[0].opinion),
+                           "tooltip": "id: {}<br>state: {}".format(agents[0].unique_id, agents[0].beliefs[0]),
                            }
                           for (_, agents) in G.nodes.data("agent")]
     portrayal['edges'] = [{'source': source,
@@ -36,7 +36,7 @@ network = NetworkModule(network_portrayal, 500, 500, library="d3")
 def grid_portrayal(agent):
     portrayal = {
         "Shape": "rect",
-        "Color": "red" if agent.opinion < 0.5 else "blue",
+        "Color": "red" if agent.beliefs[0] < 0.5 else "blue",
         "Filled": "true",
         "Layer" : 0,
         "w": 0.9,
@@ -49,11 +49,11 @@ height = 10
 
 grid = CanvasGrid(grid_portrayal, width, height, 500, 500)
 
-lambd=0.05,
-mu=0.20,
-d1=0.35,
-d2=1.5,
-mu_norm=0.5,
+lambd=0.05
+mu=0.20
+d1=0.35
+d2=1.5
+mu_norm=0.5
 sigma_norm=0.45
 
 server = ModularServer(
@@ -69,6 +69,7 @@ server = ModularServer(
         "d2": d2,
         "mu_norm": mu_norm,
         "sigma_norm": sigma_norm,
+        "network_type": "idealised"
     }
 )
 # width, height, tau, r
