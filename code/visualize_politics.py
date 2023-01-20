@@ -53,7 +53,7 @@ server = ModularServer(
     Political_spectrum, 
     [network, grid], 
     "Politics Model", 
-    {"width": width, "height": height}
+    {"width": width, "height": height, "network_type": "BA"}
 )
 # width, height, tau, r
 server.port = 8521  # The default
