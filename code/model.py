@@ -10,15 +10,6 @@ import numpy as np
 
 from agents import Wappie
 
-# class Wappie(Agent):
-#     def __init__(self, unique_id: int, model: Model, pos) -> None:
-#         super().__init__(unique_id, model)
-#         self.opinion = self.random.random()
-#         self.grid_pos = pos
-    
-#     def step(self):
-#         self.opinion = self.random.random()
-
 class Political_spectrum(Model):
     def __init__(
         self,
@@ -30,6 +21,7 @@ class Political_spectrum(Model):
         d2: float,
         mu_norm: float,
         sigma_norm: float,
+        network_type: str
         ) -> None:
         """A model for people changing opinion on their political beliefs.
 
@@ -103,4 +95,5 @@ if __name__ == "__main__":
         d2=1.5,
         mu_norm=0.5,
         sigma_norm=0.45,
+        network_type="scale_free"
     )
