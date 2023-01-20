@@ -6,18 +6,31 @@ from network import idealised_network
 from first_iteration.agents import Individual
 from math import sqrt
 import matplotlib.pyplot as plt
+import numpy as np
 
-class Wappie(Agent):
-    def __init__(self, unique_id: int, model: Model, pos) -> None:
-        super().__init__(unique_id, model)
-        self.opinion = self.random.random()
-        self.grid_pos = pos
+from agents import Wappie
+
+# class Wappie(Agent):
+#     def __init__(self, unique_id: int, model: Model, pos) -> None:
+#         super().__init__(unique_id, model)
+#         self.opinion = self.random.random()
+#         self.grid_pos = pos
     
-    def step(self):
-        self.opinion = self.random.random()
+#     def step(self):
+#         self.opinion = self.random.random()
 
 class Political_spectrum(Model):
-    def __init__(self, width: int, height: int, network_type: str) -> None:
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        lambd: float,
+        mu: float,
+        d1: float,
+        d2: float,
+        mu_norm: float,
+        sigma_norm: float,
+        ) -> None:
         """A model for people changing opinion on their political beliefs.
 
         Args:
@@ -52,7 +65,13 @@ class Political_spectrum(Model):
             x = i // width
             y = i % width
             grid_pos = (x, y)
-            agent = Wappie(i, self, grid_pos)
+
+                        # create prior beliefs
+            self.prog_cons = np.random.normal(mu_norm, sigma_norm)
+            self.left_right = np.random.normal(mu_norm, sigma_norm)
+            self.prior_beliefs = np.array([self.prog_cons, self.left_right])
+
+            agent = Wappie(i, self, grid_pos, self.prior_beliefs)
 
             self.grid.place_agent(agent, grid_pos)
                 
@@ -66,6 +85,22 @@ class Political_spectrum(Model):
         self.schedule.step()
 
 if __name__ == "__main__":
-    model = Political_spectrum(10, 10, "scale_free")
-    nx.draw_kamada_kawai(model.G, node_size=50)
-    plt.savefig("../kamada_kawai.png")
+    # model = Political_spectrum(10, 10, "scale_free")
+    # nx.draw_kamada_kawai(model.G, node_size=50)
+    # plt.savefig("../kamada_kawai.png")
+
+    # set parameters for Gaussian distribution
+    mu = 0.5
+    sigma = np.sqrt(0.2)
+
+    # initialise model
+    model = Political_spectrum(
+        width=3,
+        height=3,
+        lambd=0.05,
+        mu=0.20,
+        d1=0.35,
+        d2=1.5,
+        mu_norm=0.5,
+        sigma_norm=0.45,
+    )
