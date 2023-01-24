@@ -3,9 +3,20 @@ from mesa.visualization.modules import NetworkModule, CanvasGrid
 
 from model import Political_spectrum
 
+def color(agent) -> str:
+    if agent.beliefs[0] < 0.5 and agent.beliefs[1] < 0.5:
+        return "red"
+    elif agent.beliefs[0] < 0.5:
+        return "green"
+    elif agent.beliefs[1] < 0.5:
+        return "blue"
+    else:
+        # assert agent.beliefs[0] >= 0.5 and agent.beliefs[1] >= 0.5
+        return "yellow"
+
 def network_portrayal(G):
     def node_color(agent):
-        return "red" if agent.beliefs[0] < 0.5 else "blue"
+        return color(agent)
     
     def edge_color(agent1, agent2):
         return "black"
@@ -36,7 +47,7 @@ network = NetworkModule(network_portrayal, 500, 500, library="d3")
 def grid_portrayal(agent):
     portrayal = {
         "Shape": "rect",
-        "Color": "red" if agent.beliefs[0] < 0.5 else "blue",
+        "Color": color(agent),
         "Filled": "true",
         "Layer" : 0,
         "w": 0.9,
