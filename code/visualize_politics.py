@@ -4,7 +4,9 @@ from mesa.visualization.modules import NetworkModule, CanvasGrid
 from model import Political_spectrum
 
 def color(agent) -> str:
-    if agent.beliefs[0] < 0.5 and agent.beliefs[1] < 0.5:
+    if agent.beliefs[0] >= 0.4 and agent.beliefs[0] < 0.6 and agent.beliefs[1] >= 0.4 and agent.beliefs[1] < 0.6:
+        return "gray"
+    elif agent.beliefs[0] < 0.5 and agent.beliefs[1] < 0.5:
         return "red"
     elif agent.beliefs[0] < 0.5:
         return "green"
@@ -60,10 +62,10 @@ height = 10
 
 grid = CanvasGrid(grid_portrayal, width, height, 500, 500)
 
-lambd=0.05
+lambd=0.5
 mu=0.20
-d1=0.35
-d2=1.5
+d1=0.7
+d2=1.0
 mu_norm=0.5
 sigma_norm=0.45
 
@@ -80,7 +82,8 @@ server = ModularServer(
         "d2": d2,
         "mu_norm": mu_norm,
         "sigma_norm": sigma_norm,
-        "network_type": "idealised"
+        "network_type": "idealised",
+        "grid_preference": 0.01
     }
 )
 # width, height, tau, r

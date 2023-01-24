@@ -10,6 +10,7 @@ class Wappie(Agent):
         super().__init__(unique_id, model)
 
         self.beliefs = prior_beliefs
+        self.normalize_beliefs()
         self.interacting_neighbor = None
         self.unique_id = unique_id
         self.grid_pos = grid_pos
@@ -41,6 +42,13 @@ class Wappie(Agent):
         else:
             return x
 
+    def normalize_beliefs(self):
+        for i in range(len(self.beliefs)):
+            if self.beliefs[i] < 0.0:
+                self.beliefs[i] = 0.0
+            elif self.beliefs[i] > 1.0:
+                self.beliefs[i] = 1.0
+
     def contrast(self, other):
         # make a copy of beliefs
         beliefs_copy = copy.copy(self.beliefs)
@@ -57,24 +65,27 @@ class Wappie(Agent):
             other.beliefs - self.model.lambd * (self.beliefs - other.beliefs)
             )
         self.beliefs = beliefs_copy
+        self.normalize_beliefs()
         other.beliefs = neighbor_beliefs_copy
+        other.normalize_beliefs()
 
     def step(self):
         # get neighbors from grid and network
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True)
-        # print(f"grid: {neighbors_grid}")
+        grid_chances = [self.model.p_grid/len(neighbors_grid) for _ in neighbors_grid]
+
         connected_nodes = self.model.network.get_neighbors(self.unique_id)
-        # lol these are node ids
         neighbors_network = [self.model.agents[i] for i in connected_nodes]
-        # print(f"network: {neighbors_network}")
+        network_chances = [self.model.p_network/len(neighbors_network) for _ in neighbors_network]
 
         # merge neighbors
         connections = neighbors_grid + neighbors_network
+        weights = grid_chances + network_chances
 
         # choose random connection to interact with
         if len(connections) == 0:
             return
-        interacting_neighbor = self.random.choice(connections)
+        interacting_neighbor = self.random.choices(connections, weights)[0]
         # print("other:" + str(interacting_neighbor))
 
         if self.distance(interacting_neighbor) < self.model.d1:

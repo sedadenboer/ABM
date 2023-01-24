@@ -3,21 +3,11 @@ from mesa.space import NetworkGrid, SingleGrid, ContinuousSpace
 from mesa.time import RandomActivation
 import networkx as nx
 from network import idealised_network
-from first_iteration.agents import Individual
 from math import sqrt
 import matplotlib.pyplot as plt
 import numpy as np
 
 from agents import Wappie
-
-# class Wappie(Agent):
-#     def __init__(self, unique_id: int, model: Model, pos, prior_beliefs) -> None:
-#         super().__init__(unique_id, model)
-#         self.beliefs = (self.random.random(), self.random.random())
-#         self.grid_pos = pos
-    
-#     def step(self):
-#         self.beliefs = (self.random.random(), self.random.random())
 
 class Political_spectrum(Model):
     def __init__(
@@ -30,7 +20,8 @@ class Political_spectrum(Model):
         d2: float,
         mu_norm: float,
         sigma_norm: float,
-        network_type: str
+        network_type: str,
+        grid_preference: float = 0.5
         ) -> None:
         """A model for people changing opinion on their political beliefs.
 
@@ -47,13 +38,14 @@ class Political_spectrum(Model):
             self.G = nx.barabasi_albert_graph(n=num_agents, m=2)
         elif network_type == "idealised":
             # self.G = idealised_network(num_agents)
-            self.G = nx.random_geometric_graph(num_agents, 0.125)
+            self.G = nx.random_geometric_graph(num_agents, 0.15)
         elif network_type == "scale_free":
             graph = nx.scale_free_graph(num_agents)
             self.G = nx.Graph(graph)
             self.G.remove_edges_from(nx.selfloop_edges(self.G))
         elif network_type == "random":
-            pass
+            # here all agents should be connected ?
+            raise NotImplementedError()
         else:
             ValueError("'network_type' should be either BA, random, idealised or scale_free")
 
@@ -67,7 +59,7 @@ class Political_spectrum(Model):
             x = i // width
             y = i % width
             grid_pos = (x, y)
-            print(grid_pos)
+            # print(grid_pos)
 
                         # create prior beliefs
             prog_cons = np.random.normal(mu_norm, sigma_norm)
@@ -80,25 +72,28 @@ class Political_spectrum(Model):
                            prior_beliefs=prior_beliefs)
 
             self.grid.place_agent(agent, grid_pos)
-            print(agent.pos)
+            # print(agent.pos)
                 
             self.network.place_agent(agent, i)
-            print(agent.pos)
+            # print(agent.pos)
 
             self.schedule.add(agent)
 
             self.agents[i] = agent
 
-        assert type(d1) == float
         self.d1 = d1
         self.d2 = d2
         self.lambd = lambd
         self.mu = mu
+        self.p_grid = grid_preference
+        self.p_network = 1 - grid_preference
 
         self.running = True
+        self.num_steps = 0
 
     def step(self):
         self.schedule.step()
+        self.num_steps += 1
 
 if __name__ == "__main__":
     # model = Political_spectrum(10, 10, "scale_free")
