@@ -33,7 +33,7 @@ class Wappie(Agent):
         other.beliefs = neighbor_beliefs_copy
 
     def normalisation(self, x):
-        """ """
+        """"""
         if x < 0.0:
             return 0.0  # should be float, otherwise numpy will scream at you...
         elif x > 1.0:
@@ -47,13 +47,13 @@ class Wappie(Agent):
         neighbor_beliefs_copy = copy.copy(other.beliefs)
 
         # vectorize normalisation vector s.t. it can be applied to an numpy array
-        add_normalisation = np.vectorize(add_normalisation)
+        add_normalisation = np.vectorize(self.normalisation)
 
         # update beliefs of agent and interacting connection
-        beliefs_copy += add_normalisation(
+        beliefs_copy = add_normalisation(
             self.beliefs - self.model.lambd * (other.beliefs - self.beliefs)
             )
-        neighbor_beliefs_copy += add_normalisation(
+        neighbor_beliefs_copy = add_normalisation(
             other.beliefs - self.model.lambd * (self.beliefs - other.beliefs)
             )
         self.beliefs = beliefs_copy
