@@ -173,3 +173,8 @@ poetry.toml
 # images
 *.png
 *.jpeg
+!docs/*.png
+!docs/*.jpeg
+
+output_files/*
+!output_files/README.md
