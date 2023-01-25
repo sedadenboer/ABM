@@ -2,3 +2,4 @@
 mesa
 networkx
 matplotlib
+scipy
