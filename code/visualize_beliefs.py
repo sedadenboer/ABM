@@ -26,7 +26,7 @@ def plot_beliefs(model: Political_spectrum, run_id: int):
     plt.ylim((0.0, 1.0))
     plt.plot(x, y, ".")
     num_steps = model.num_steps
-    plt.savefig(f"../output_files/{run_id}_scatterplot_step{num_steps}.png")
+    plt.savefig(f"../output_files/images/{run_id}_scatterplot_step{num_steps}.png")
 
 def animate_beliefs(model: Political_spectrum, run_id: int):
     assert model.num_steps == 0
@@ -40,7 +40,6 @@ def animate_beliefs(model: Political_spectrum, run_id: int):
 
     # points = [(x[i], y[i]) for i in range(len(x))]
     colors = [i / 100 for i in range(len(x))]
-    cmap = "hsv"
     scat = ax.scatter(x, y, c=colors, cmap="hsv")
     # scat = ax.scatter(points)
 
@@ -58,7 +57,7 @@ def animate_beliefs(model: Political_spectrum, run_id: int):
     writer = animation.PillowWriter(fps=15,
                                     metadata=dict(artist='Me'),
                                     bitrate=1800)
-    ani.save(f'../output_files/{run_id}_scatter.gif', writer=writer)
+    ani.save(f'../output_files/images/{run_id}_scatter.gif', writer=writer)
 
 if __name__ == "__main__":
     width = 10

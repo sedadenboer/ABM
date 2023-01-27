@@ -67,7 +67,7 @@ mu=0.20
 d1=0.7
 d2=1.0
 mu_norm=0.5
-sigma_norm=0.45
+sigma_norm=0.2
 
 server = ModularServer(
     Political_spectrum, 

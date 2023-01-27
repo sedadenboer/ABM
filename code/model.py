@@ -1,6 +1,7 @@
 from mesa import Model, Agent
 from mesa.space import NetworkGrid, SingleGrid, ContinuousSpace
 from mesa.time import RandomActivation
+from mesa.datacollection import DataCollector
 import networkx as nx
 from network import idealised_network
 from math import sqrt
@@ -9,19 +10,22 @@ import numpy as np
 
 from agents import Wappie
 
+
+
 class Political_spectrum(Model):
     def __init__(
         self,
-        width: int,
-        height: int,
-        lambd: float,
-        mu: float,
-        d1: float,
-        d2: float,
-        mu_norm: float,
-        sigma_norm: float,
-        network_type: str,
-        grid_preference: float = 0.5
+        width: int = 10,
+        height: int = 10,
+        lambd: float = 0.5,
+        mu: float = 0.20,
+        d1: float = 0.7,
+        d2: float = 1.0,
+        mu_norm: float = 0.5,
+        sigma_norm: float = 0.2,
+        network_type: str = "BA",
+        grid_preference: float = 0.5,
+        both_affected: bool = True
         ) -> None:
         """A model for people changing opinion on their political beliefs.
 
@@ -81,19 +85,45 @@ class Political_spectrum(Model):
 
             self.agents[i] = agent
 
+        # save the parameters
         self.d1 = d1
         self.d2 = d2
         self.lambd = lambd
         self.mu = mu
         self.p_grid = grid_preference
         self.p_network = 1 - grid_preference
+        self.both_affected = both_affected
 
+        # set the datacollector
+        model_reporters = {"polarization": lambda m: m.polarization()}
+                        # "step": lambda m: m.num_steps}
+        # agent_reporters = {"beliefs": lambda a: a.beliefs}
+        self.datacollector = DataCollector(model_reporters=model_reporters)
+                                        # agent_reporters=agent_reporters)
+
+        # turn the model on
         self.running = True
         self.num_steps = 0
+        self.datacollector.collect(self)
+
+    def polarization(self):
+        # only measure every 10 steps
+        if self.num_steps % 10 != 0:
+            return
+        polarization = 0
+        for agent1_index in range(len(self.agents)):
+            for agent2_index in range(agent1_index + 1, len(self.agents)):
+                agent1 = self.agents[agent1_index]
+                agent2 = self.agents[agent2_index]
+                # find the distance between the agents
+                dist = agent1.distance(agent2)
+                polarization += dist
+        return polarization
 
     def step(self):
         self.schedule.step()
         self.num_steps += 1
+        self.datacollector.collect(self)
 
 if __name__ == "__main__":
     # model = Political_spectrum(10, 10, "scale_free")
