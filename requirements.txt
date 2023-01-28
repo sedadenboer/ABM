@@ -1,5 +1,7 @@
-
 mesa
 networkx
 matplotlib
 scipy
+SAlib
+pandas
+numpy
