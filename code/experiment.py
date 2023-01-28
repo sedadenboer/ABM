@@ -7,7 +7,6 @@ from model import Political_spectrum
 def get_polarization():
     params = {
             "width": 10,
-            "height": 10,
             "lambd": 0.5,
             "mu": 0.20,
             "d1": 0.7,
@@ -23,7 +22,7 @@ def get_polarization():
         Political_spectrum,
         parameters=params,
         iterations=1,
-        max_steps=20,
+        max_steps=100,
         number_processes=1,
         data_collection_period=1,
         display_progress=True,
@@ -34,30 +33,49 @@ def get_polarization():
 
 def polarization_trend(repeats):
     
-    polarization_dict = {}
+    all_data = []
 
     for count in range(repeats):
+
+        # initialize dictionary to store polarization data per experiment
+        polarization_dict = {'data': []}
+
+        # get data
         results = get_polarization()
+
         print()
+
+        # add data to dictionary
         for dict in results:
             polarization = dict['polarization']
+            polarization_dict['data'].append(polarization)
+        
+        # make it a dataframe and add to list
+        df = pd.DataFrame(polarization_dict)
+        all_data.append(df)
 
-            if f'experiment {count}' in polarization_dict:
-                polarization_dict[f'experiment {count}'].append(polarization)
-            else:
-                polarization_dict[f'experiment {count}'] = [polarization]
-    
-    df = pd.DataFrame(polarization_dict).dropna()
-    print(df)
+    # merge all experiment data into one dataframe
+    final_data = pd.concat(all_data).dropna().sort_index()
 
-    return df
+    return final_data
 
 
-def visualise_polarization(data):
-    sns.lineplot(data=data)
-    plt.savefig("../output_files/experiments/lineplot_polarization.png")
+def visualise_polarization(df):
+
+    # make lineplot
+    plt.figure()
+    sns.set_style("whitegrid")
+    sns.lineplot(df, palette=['royalblue'], errorbar=('ci', 95), legend=False)
+    plt.xlabel('timestep')
+    plt.ylabel('polarisation')
+
+    # save and show plot
+    plt.savefig("../output_files/experiments/lineplot_polarization.png", dpi=400)
+    plt.show()
+
+
 
 if __name__ == "__main__":
 
-    data = polarization_trend(3)
+    data = polarization_trend(100)
     visualise_polarization(data)
