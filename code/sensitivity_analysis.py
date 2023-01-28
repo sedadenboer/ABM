@@ -49,6 +49,32 @@ def ofat_sensitivity_analysis(from_data: bool, save_data=True):
 
     # all it needs is pretty plots!
 
+def create_samples(problem, num_samples, second_order: bool, save_data: bool = False):
+    param_values = np.array(sobol_sample.sample(problem, num_samples, calc_second_order=second_order))
+    parameters = {}
+    parameters_list = []
+    for run in range(len(param_values)):
+        variables = {}
+        for name, val in zip(problem["names"], param_values[run]):
+            variables[name] = val
+
+        # only create samples where d1 < d2: <- this might not be usefull, since sobol.analyse does not use it...
+        if variables["d1"] > variables["d2"]: # NOTE maybe just remove this since the model does it for us? 
+            variables["d2"] = np.sqrt(2)
+
+        # make sure the network is chosen as index
+        variables["network_type"] = int(variables["network_type"])
+
+        # convert the sample to the right type
+        variables["grid_radius"] = int(variables["grid_radius"])
+        variables["both_affected"] = int(variables["both_affected"] > 0.5)
+
+        parameters[run] = variables
+        parameters_list.append(variables)
+    # print(parameters_list)
+    return parameters_list
+
+
 def run_batch_model(parameters):
     max_steps, data_collection_period, variables = parameters
     batch = batch_run(model_cls=Political_spectrum,
@@ -62,40 +88,22 @@ def run_batch_model(parameters):
     data = pd.DataFrame(batch)
     return batch
 
-def sobol_sensitivity_analysis(number_processes = None):
-    problem = {
-        "num_vars": 2,
-        "names": ["d1", "d2"],
-        "bounds": [[0.01, 1.0], [1.0, 1.5]]}
+
+def sobol_run_samples(problem, samples, number_processes = None, save_data: bool = False):
 
     repeats = 2
     max_steps = 100
-    num_samples = 8 # should be a power of 2
     data_collection_period = -1
 
-    param_values = np.array(sobol_sample.sample(problem, num_samples, calc_second_order=False))
-    # print(param_values)
-    # print(param_values[:,0])
-    parameters = {}
-    parameters_list = []
-    for run in range(len(param_values)):
-        variables = {}
-        for name, val in zip(problem["names"], param_values[run]):
-            variables[name] = val
-        parameters[run] = variables
-        parameters_list.append([max_steps, data_collection_period, variables])
-    # for i, var in enumerate(problem["names"]):
-    #     parameters[var] = list(param_values[:,i])
-
-    # print(parameters)
-
     # create a dataframe to save the data
-    data = pd.DataFrame(index=range(repeats*len(param_values)),
+    data = pd.DataFrame(index=range(repeats*len(samples)),
                         columns=problem["names"])
     data["polarization"] = None
+    data["network_influence"] = None
     run = 0 # keep track of the runs for the dataframe
-    print(data)
+    # print(data)
 
+    parameters = [[max_steps, data_collection_period, i] for i in samples]
 
     if not number_processes:
         number_processes = mp.cpu_count()
@@ -103,11 +111,10 @@ def sobol_sensitivity_analysis(number_processes = None):
     if number_processes > 1:
         pool = mp.Pool(number_processes)
         for rep in range(repeats):
-            process = pool.map_async(run_batch_model, parameters_list)
+            process = pool.map_async(run_batch_model, parameters)
             result = process.get()
             for i in range(len(result)):
                 run_dict = result[i][0]
-                print(run_dict)
                 for name in data.columns:
                     data.loc[run, name] = run_dict[name]
                 run += 1
@@ -116,24 +123,26 @@ def sobol_sensitivity_analysis(number_processes = None):
         pool.close()
 
     else:
-        for rep in range(repeats):
-            for run in parameters:
-                variables = parameters[run]
-                batch = batch_run(model_cls=Political_spectrum,
-                                parameters=variables, # will run each combination of parameters
-                                number_processes=1, # not parallel
-                                iterations=repeats,
-                                data_collection_period=data_collection_period,
-                                max_steps=max_steps,
-                                display_progress=False)
-
-                data = pd.DataFrame(batch)
-                print(data.head())
-                print(len(data))
-        
+        raise NotImplementedError()
     
     return data
 
 if __name__ == "__main__":
     # ofat_sensitivity_analysis(False)
-    sobol_sensitivity_analysis(number_processes=None)
+
+    problem = {
+    "num_vars": 8,
+    "names": ["lambd", "mu", "d1", "d2", "network_type", "grid_preference", "grid_radius", "both_affected"],
+    "bounds": [[0, 1], [0, 1], [0, np.sqrt(2)], [0, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
+
+    # problem = {
+    # "num_vars": 2,
+    # "names": ["d1", "d2"],
+    # "bounds": [[0, np.sqrt(2)], [0, np.sqrt(2)]]}
+
+    second_order = False
+
+    samples = create_samples(problem, num_samples=2, second_order=second_order)
+
+    data = sobol_run_samples(problem, samples, number_processes=None, save_data=False)
+    Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)

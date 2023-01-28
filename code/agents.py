@@ -73,9 +73,27 @@ class Wappie(Agent):
             other.beliefs = neighbor_beliefs_copy
             other.normalize_beliefs()
 
+    def distance_in_grid(self):
+        # calculate the average distance in beliefs and that of grid neighbours
+        distances = []
+        neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=self.model.grid_radius)
+        for neighbor in neighbors_grid:
+            distances.append(self.distance(neighbor))
+        return sum(distances) / len(distances)
+    
+    def distance_in_network(self):
+        connected_nodes = self.model.network.get_neighbors(self.unique_id)
+        if len(connected_nodes) == 0:
+            return 0
+        neighbors_network = [self.model.agents[i] for i in connected_nodes]
+        distances = []
+        for neighbor in neighbors_network:
+            distances.append(self.distance(neighbor))
+        return sum(distances) / len(distances)
+
     def step(self):
         # get neighbors from grid and network
-        neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True)
+        neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=self.model.grid_radius)
         grid_chances = [self.model.p_grid/len(neighbors_grid) for _ in neighbors_grid]
 
         connected_nodes = self.model.network.get_neighbors(self.unique_id)
