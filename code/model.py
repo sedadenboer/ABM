@@ -111,6 +111,7 @@ class Political_spectrum(Model):
         if self.num_steps % 10 != 0:
             return
         polarization = 0
+
         for agent1_index in range(len(self.agents)):
             for agent2_index in range(agent1_index + 1, len(self.agents)):
                 agent1 = self.agents[agent1_index]
@@ -118,6 +119,7 @@ class Political_spectrum(Model):
                 # find the distance between the agents
                 dist = agent1.distance(agent2)
                 polarization += dist
+
         return polarization
 
     def step(self):
