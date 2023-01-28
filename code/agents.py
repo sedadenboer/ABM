@@ -29,9 +29,11 @@ class Wappie(Agent):
 
         # update beliefs of agent and interacting connection
         beliefs_copy += self.model.mu * (self.beliefs - other.beliefs)
-        neighbor_beliefs_copy += self.model.mu * (other.beliefs - self.beliefs)
         self.beliefs = beliefs_copy
-        other.beliefs = neighbor_beliefs_copy
+        
+        if self.model.both_affected:
+            neighbor_beliefs_copy += self.model.mu * (other.beliefs - self.beliefs)
+            other.beliefs = neighbor_beliefs_copy
 
     def normalisation(self, x):
         """"""
@@ -61,13 +63,15 @@ class Wappie(Agent):
         beliefs_copy = add_normalisation(
             self.beliefs - self.model.lambd * (other.beliefs - self.beliefs)
             )
-        neighbor_beliefs_copy = add_normalisation(
-            other.beliefs - self.model.lambd * (self.beliefs - other.beliefs)
-            )
         self.beliefs = beliefs_copy
         self.normalize_beliefs()
-        other.beliefs = neighbor_beliefs_copy
-        other.normalize_beliefs()
+
+        if self.model.both_affected:
+            neighbor_beliefs_copy = add_normalisation(
+                other.beliefs - self.model.lambd * (self.beliefs - other.beliefs)
+                )
+            other.beliefs = neighbor_beliefs_copy
+            other.normalize_beliefs()
 
     def step(self):
         # get neighbors from grid and network
