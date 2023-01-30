@@ -157,17 +157,17 @@ if __name__ == "__main__":
 
     second_order = False
 
-    samples = create_samples(problem=problem,
-                            num_samples=2,
-                            second_order=second_order,
-                            save_data=True)
+    # samples = create_samples(problem=problem,
+    #                         num_samples=2,
+    #                         second_order=second_order,
+    #                         save_data=True)
 
     data = sobol_run_samples(problem=problem,
                             repeats=4,
                             max_steps=100,
                             data_collection_period=-1,
                             from_data=True,
-                            samples=samples,
+                            samples=None,
                             number_processes=None,
                             save_data=True)
     
