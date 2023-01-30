@@ -42,6 +42,7 @@ class Political_spectrum(Model):
         # create network
         if type(network_type) == int:
             network_type = self.network_types[network_type]
+
         if network_type == "BA":
             self.G = nx.barabasi_albert_graph(n=self.num_agents, m=2)
         elif network_type == "idealised":

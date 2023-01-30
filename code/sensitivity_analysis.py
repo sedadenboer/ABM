@@ -8,8 +8,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import multiprocessing as mp
+import os
 
 from model import Political_spectrum
+
+from visualize_beliefs import get_output_path
 
 # OFAT
 def ofat_sensitivity_analysis(from_data: bool, save_data=True):
@@ -71,7 +74,12 @@ def create_samples(problem, num_samples, second_order: bool, save_data: bool = F
 
         parameters[run] = variables
         parameters_list.append(variables)
-    # print(parameters_list)
+
+    if save_data:
+        df = pd.DataFrame(parameters_list)
+        path = get_output_path()
+        df.to_csv(f"{path}/samples/sensitivity_analysis_samples.csv", index=False)
+        
     return parameters_list
 
 
@@ -84,33 +92,38 @@ def run_batch_model(parameters):
                         data_collection_period=data_collection_period,
                         max_steps=max_steps,
                         display_progress=False)
-
-    data = pd.DataFrame(batch)
     return batch
 
 
-def sobol_run_samples(problem, samples, number_processes = None, save_data: bool = False):
+def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_data: bool, samples=None, number_processes = None, save_data: bool = False):
 
-    repeats = 2
-    max_steps = 100
-    data_collection_period = -1
-
-    # create a dataframe to save the data
-    data = pd.DataFrame(index=range(repeats*len(samples)),
-                        columns=problem["names"])
-    data["polarization"] = None
-    data["network_influence"] = None
-    run = 0 # keep track of the runs for the dataframe
-    # print(data)
+    if from_data:
+        # load the samples
+        path = get_output_path()
+        df = pd.read_csv(f"{path}/samples/_sensitivity_analysis_samples.csv")
+        samples = df.to_dict("records")
+    else:
+        # make sure samples are given
+        if not samples:
+            raise ValueError("Please provide samples if not run from a file.")
 
     parameters = [[max_steps, data_collection_period, i] for i in samples]
 
+    # use the number of processors of this machine
     if not number_processes:
         number_processes = mp.cpu_count()
 
     if number_processes > 1:
         pool = mp.Pool(number_processes)
+
         for rep in range(repeats):
+            # create a dataframe to save the data
+            data = pd.DataFrame(index=range(len(samples)),
+                                columns=problem["names"])
+            data["polarization"] = None
+            data["network_influence"] = None
+            run = 0 # keep track of the runs for the dataframe
+
             process = pool.map_async(run_batch_model, parameters)
             result = process.get()
             for i in range(len(result)):
@@ -119,30 +132,43 @@ def sobol_run_samples(problem, samples, number_processes = None, save_data: bool
                     data.loc[run, name] = run_dict[name]
                 run += 1
 
-        print(data)
+            if save_data:
+                path = get_output_path()
+                user = os.environ.get('USER', os.environ.get('USERNAME'))
+                data.to_csv(f"{path}/run_data/sensitivity_analysis_{user}_{rep}.csv", index=False)
+
+            print(data)
         pool.close()
 
     else:
         raise NotImplementedError()
-    
+
     return data
 
+def sobol_analyse(problem, data, second_order):
+    pass
+
 if __name__ == "__main__":
-    # ofat_sensitivity_analysis(False)
 
     problem = {
     "num_vars": 8,
     "names": ["lambd", "mu", "d1", "d2", "network_type", "grid_preference", "grid_radius", "both_affected"],
     "bounds": [[0, 1], [0, 1], [0, np.sqrt(2)], [0, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
 
-    # problem = {
-    # "num_vars": 2,
-    # "names": ["d1", "d2"],
-    # "bounds": [[0, np.sqrt(2)], [0, np.sqrt(2)]]}
-
     second_order = False
 
-    samples = create_samples(problem, num_samples=2, second_order=second_order)
+    samples = create_samples(problem=problem,
+                            num_samples=2,
+                            second_order=second_order,
+                            save_data=True)
 
-    data = sobol_run_samples(problem, samples, number_processes=None, save_data=False)
-    Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)
+    data = sobol_run_samples(problem=problem,
+                            repeats=4,
+                            max_steps=100,
+                            data_collection_period=-1,
+                            from_data=True,
+                            samples=samples,
+                            number_processes=None,
+                            save_data=True)
+    
+    # Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)

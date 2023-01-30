@@ -1,7 +1,19 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import datetime
+import os
+from pathlib import Path
+
 from model import Political_spectrum
+
+def get_output_path():
+    path = os.path.abspath(__file__)
+    output_path = Path(path).parent
+    # move to the parent if still in the code directory
+    if os.path.split(output_path)[1] == "code":
+        output_path = output_path.parent
+    output_path = output_path / "output_files"
+    return output_path
 
 def get_beliefs(model: Political_spectrum):
     x = []
@@ -26,7 +38,9 @@ def plot_beliefs(model: Political_spectrum, run_id: int):
     plt.ylim((0.0, 1.0))
     plt.plot(x, y, ".")
     num_steps = model.num_steps
-    plt.savefig(f"../output_files/images/{run_id}_scatterplot_step{num_steps}.png")
+
+    output_path = get_output_path()
+    plt.savefig(f"{output_path}/images/{run_id}_scatterplot_step{num_steps}.png")
 
 def animate_beliefs(model: Political_spectrum, run_id: int):
     assert model.num_steps == 0
@@ -57,7 +71,8 @@ def animate_beliefs(model: Political_spectrum, run_id: int):
     writer = animation.PillowWriter(fps=15,
                                     metadata=dict(artist='Me'),
                                     bitrate=1800)
-    ani.save(f'../output_files/images/{run_id}_scatter.gif', writer=writer)
+    path = get_output_path()
+    ani.save(f'{path}/images/{run_id}_scatter.gif', writer=writer)
 
 if __name__ == "__main__":
     width = 10
@@ -71,7 +86,7 @@ if __name__ == "__main__":
     network_type = "BA"
     grid_preference = 0.5
 
-    model = Political_spectrum(width, height, lambd, mu, d1, d2, mu_norm, sigma_norm, network_type, grid_preference)
+    model = Political_spectrum(width, lambd, mu, d1, d2, mu_norm, sigma_norm, network_type, grid_preference)
     run_id = datetime.datetime.now()
     plot_beliefs(model, run_id)
     # for _ in range(5):
