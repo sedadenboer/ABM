@@ -124,8 +124,8 @@ class Political_spectrum(Model):
             _type_: _description_
         """
         # only measure every 10 steps
-        if self.num_steps % 10 != 0:
-            return
+        # if self.num_steps % 10 != 0:
+        #     return
         
         polarization = []
         for agent1_index in range(self.num_agents):
@@ -168,12 +168,14 @@ if __name__ == "__main__":
     # initialise model
     model = Political_spectrum(
         width=3,
-        height=3,
         lambd=0.05,
         mu=0.20,
         d1=0.35,
         d2=1.5,
         mu_norm=0.5,
         sigma_norm=0.45,
-        network_type="scale_free"
+        network_type="scale_free",
+        grid_preference=0.5,
+        grid_radius=2,
+        both_affected=True
     )
