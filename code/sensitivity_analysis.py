@@ -78,7 +78,7 @@ def create_samples(problem, num_samples, second_order: bool, save_data: bool = F
     if save_data:
         df = pd.DataFrame(parameters_list)
         path = get_output_path()
-        df.to_csv(f"{path}/samples/sensitivity_analysis_samples.csv", index=False)
+        df.to_csv(f"{path}/samples/_sensitivity_analysis_samples.csv", index=False)
         
     return parameters_list
 
@@ -100,7 +100,7 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
     if from_data:
         # load the samples
         path = get_output_path()
-        df = pd.read_csv(f"{path}/samples/_sensitivity_analysis_samples.csv")
+        df = pd.read_csv(f"{path}/samples/sensitivity_analysis_samples.csv")
         samples = df.to_dict("records")
     else:
         # make sure samples are given
