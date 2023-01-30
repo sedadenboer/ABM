@@ -90,8 +90,8 @@ class Wappie(Agent):
         for neighbor in neighbors_network:
             distances.append(self.distance(neighbor))
         return sum(distances) / len(distances)
-
-    def step(self):
+    
+    def interact(self):
         # get neighbors from grid and network
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=self.model.grid_radius)
         grid_chances = [self.model.p_grid/len(neighbors_grid) for _ in neighbors_grid]
@@ -114,3 +114,16 @@ class Wappie(Agent):
             self.assimilation(interacting_neighbor)
         elif self.distance(interacting_neighbor) > self.model.d2:
             self.contrast(interacting_neighbor)
+    
+    def satisfied(self):
+        pass
+    
+    def move(self):
+        # find the position that has the most neighbours like itself
+        neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=1)
+        
+    def step(self):
+        self.interact()
+        if not self.satisfied():
+            self.move()
+

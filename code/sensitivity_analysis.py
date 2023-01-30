@@ -145,8 +145,25 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
 
     return data
 
-def sobol_analyse(problem, data, second_order):
-    pass
+def sobol_analyze_data(problem, from_file: bool=True, data=None, second_order:bool=False):
+    if from_file:
+        dfs = []
+        # find all runs and concatenate dataframes
+        path = get_output_path()
+        files = os.listdir(f"{path}/run_data")
+        for file in files:
+            if file.startswith("sensitivity_analysis_") and file.endswith(".csv"):
+                # get data
+                df = pd.read_csv(f"{path}/run_data/{file}")
+                dfs.append(df)
+
+        data = pd.concat(dfs)
+        print(data.head())
+        print(data.size)
+
+    
+    # Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)
+    # Si_network_influence = sobol_analyse.analyze(problem, data["network_influence"].values, calc_second_order=second_order, print_to_console=True)
 
 if __name__ == "__main__":
 
@@ -162,13 +179,17 @@ if __name__ == "__main__":
     #                         second_order=second_order,
     #                         save_data=True)
 
-    data = sobol_run_samples(problem=problem,
-                            repeats=4,
-                            max_steps=100,
-                            data_collection_period=-1,
-                            from_data=True,
-                            samples=None,
-                            number_processes=None,
-                            save_data=True)
+    # data = sobol_run_samples(problem=problem,
+    #                         repeats=4,
+    #                         max_steps=100,
+    #                         data_collection_period=-1,
+    #                         from_data=True,
+    #                         samples=None,
+    #                         number_processes=None,
+    #                         save_data=True)
+
+    sobol_analyze_data(problem=problem,
+                    from_file=True,
+                    second_order=second_order)
     
     # Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)
