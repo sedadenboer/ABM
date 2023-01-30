@@ -176,5 +176,6 @@ poetry.toml
 !docs/*.png
 !docs/*.jpeg
 
-output_files/*
-!output_files/README.md
+output_files/*/*
+!output_files/*/README.md
+!output_files/*/sensitivity_analysis*
