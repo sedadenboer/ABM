@@ -91,20 +91,20 @@ class Wappie(Agent):
     def interact(self):
         # get neighbors from grid and network
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=self.model.grid_radius)
-        grid_chances = [self.model.p_grid/len(neighbors_grid) for _ in neighbors_grid]
 
         connected_nodes = self.model.network.get_neighbors(self.unique_id)
         neighbors_network = [self.model.agents[i] for i in connected_nodes]
-        network_chances = [self.model.p_network/len(neighbors_network) for _ in neighbors_network]
 
-        # merge neighbors
-        connections = neighbors_grid + neighbors_network
-        weights = grid_chances + network_chances
-
-        # choose random connection to interact with
-        if len(connections) == 0:
-            return
-        interacting_neighbor = self.random.choices(connections, weights)[0]
+        # choose neighbors
+        if np.random.random() < self.model.p_grid:
+            if not neighbors_grid:
+                return
+            interacting_neighbor = self.random.choice(neighbors_grid)
+        else:
+            if not neighbors_network:
+                return
+            interacting_neighbor = self.random.choice(neighbors_network)
+        
         # print("other:" + str(interacting_neighbor))
 
         if self.distance(interacting_neighbor) < self.model.d1:
@@ -113,7 +113,7 @@ class Wappie(Agent):
             self.contrast(interacting_neighbor)
     
     def satisfied(self):
-        pass
+        return True
 
     def move(self):
         # find the position that has the most neighbours like itself

@@ -57,7 +57,7 @@ class Political_spectrum(Model):
         elif network_type == "complete":
             self.G = nx.complete_graph(self.num_agents)
         else:
-            ValueError("'network_type' should be either BA, erdos-renyi, complete or idealised")
+            raise ValueError("'network_type' should be either BA, erdos-renyi, complete or idealised")
 
         self.network = NetworkGrid(self.G)
 
@@ -136,6 +136,7 @@ class Political_spectrum(Model):
                 dist = agent1.distance(agent2)
                 polarization.append(dist)
         return sum(polarization) / len(polarization)
+        # return sum(polarization)
 
     def influenced_by_network(self):
         if self.num_steps % 100 != 0:
@@ -167,15 +168,18 @@ if __name__ == "__main__":
 
     # initialise model
     model = Political_spectrum(
-        width=3,
+        width=25,
         lambd=0.05,
         mu=0.20,
         d1=0.35,
         d2=1.5,
         mu_norm=0.5,
         sigma_norm=0.45,
-        network_type="scale_free",
+        network_type="erdos-renyi",
         grid_preference=0.5,
         grid_radius=2,
         both_affected=True
     )
+
+    for _ in range(100):
+        model.step()

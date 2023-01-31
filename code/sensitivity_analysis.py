@@ -250,6 +250,11 @@ if __name__ == "__main__":
     "names": ["lambd", "mu", "d1", "d2", "network_type", "grid_preference", "grid_radius", "both_affected"],
     "bounds": [[0, 0.5], [0, 0.5], [0, np.sqrt(2)/2], [np.sqrt(2)/2, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
 
+    # problem = {
+    # "num_vars": 9,
+    # "names": ["width", "lambd", "mu", "d1", "d2", "network_type", "grid_preference", "grid_radius", "both_affected"],
+    # "bounds": [[5, 33], [0, 0.5], [0, 0.5], [0, np.sqrt(2)/2], [np.sqrt(2)/2, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
+
     second_order = False
 
     # samples = create_samples(problem=problem,
