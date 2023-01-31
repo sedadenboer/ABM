@@ -91,7 +91,7 @@ class Wappie(Agent):
     def interact(self):
         # get neighbors from grid and network
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=self.model.grid_radius)
-
+        
         connected_nodes = self.model.network.get_neighbors(self.unique_id)
         neighbors_network = [self.model.agents[i] for i in connected_nodes]
 
@@ -104,8 +104,6 @@ class Wappie(Agent):
             if not neighbors_network:
                 return
             interacting_neighbor = self.random.choice(neighbors_network)
-        
-        # print("other:" + str(interacting_neighbor))
 
         if self.distance(interacting_neighbor) < self.model.d1:
             self.assimilation(interacting_neighbor)
@@ -113,7 +111,7 @@ class Wappie(Agent):
             self.contrast(interacting_neighbor)
     
     def satisfied(self):
-        return True
+        pass
 
     def move(self):
         # find the position that has the most neighbours like itself
