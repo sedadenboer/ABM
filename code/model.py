@@ -1,11 +1,8 @@
 from mesa import Model, Agent
-from mesa.space import NetworkGrid, SingleGrid, ContinuousSpace
+from mesa.space import NetworkGrid, SingleGrid
 from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector
 import networkx as nx
-from network import idealised_network
-from math import sqrt
-import matplotlib.pyplot as plt
 import numpy as np
 
 from agents import Wappie
@@ -21,11 +18,14 @@ class Political_spectrum(Model):
         mu: float = 0.20,
         d1: float = 0.7,
         d2: float = 1.0,
+        satisfaction_distance: float = 0.5,
+        satisfaction_threshold: float = 0.0,
         mu_norm: float = 0.5,
         sigma_norm: float = 0.2,
         network_type: str = "BA",
         grid_preference: float = 0.5,
         grid_radius: int = 2,
+        grid_density: float = 1,
         both_affected: bool = True
         ) -> None:
         """A model for people changing opinion on their political beliefs.
@@ -36,7 +36,7 @@ class Political_spectrum(Model):
             network_type (str): Can be BA, random, idealised or scale_free?
         """
         height = width
-        self.num_agents = width * height
+        self.num_agents = round(grid_density * width * height)
         self.schedule = RandomActivation(self)
 
         # create network
@@ -46,12 +46,7 @@ class Political_spectrum(Model):
         if network_type == "BA":
             self.G = nx.barabasi_albert_graph(n=self.num_agents, m=2)
         elif network_type == "idealised":
-            # self.G = idealised_network(num_agents)
             self.G = nx.random_geometric_graph(self.num_agents, 0.15)
-        # elif network_type == "scale_free":
-        #     graph = nx.scale_free_graph(num_agents)
-        #     self.G = nx.Graph(graph)
-            # self.G.remove_edges_from(nx.selfloop_edges(self.G))
         elif network_type == "erdos-renyi":
             self.G = nx.erdos_renyi_graph(self.num_agents, 0.4)
         elif network_type == "complete":
@@ -64,37 +59,16 @@ class Political_spectrum(Model):
         self.grid = SingleGrid(width, height, torus=True)
         self.grid_radius = grid_radius
 
-        self.agents = {}
         # create agents
+        self.agents = {}
         for i in range(self.num_agents):
-            x = i // width
-            y = i % width
-            grid_pos = (x, y)
-            # print(grid_pos)
-
-                        # create prior beliefs
-            prog_cons = np.random.normal(mu_norm, sigma_norm)
-            left_right = np.random.normal(mu_norm, sigma_norm)
-            prior_beliefs = np.array([prog_cons, left_right])
-
-            agent = Wappie(unique_id=i, 
-                           model=self,
-                           grid_pos=grid_pos,
-                           prior_beliefs=prior_beliefs)
-
-            self.grid.place_agent(agent, grid_pos)
-            # print(agent.pos)
-                
-            self.network.place_agent(agent, i)
-            # print(agent.pos)
-
-            self.schedule.add(agent)
-
-            self.agents[i] = agent
+            self.place_agent(i, mu_norm, sigma_norm)
 
         # save the parameters
         self.d1 = d1
         self.d2 = d2
+        self.ds = satisfaction_distance
+        self.threshold = satisfaction_threshold
         self.lambd = lambd
         self.mu = mu
         self.p_grid = grid_preference
@@ -112,6 +86,29 @@ class Political_spectrum(Model):
         self.num_steps = 0
         self.datacollector.collect(self)
 
+    def place_agent(self, unique_id, mu_norm, sigma_norm):
+        grid_pos = self.grid.find_empty()
+
+        # create prior beliefs
+        prog_cons = np.random.normal(mu_norm, sigma_norm)
+        left_right = np.random.normal(mu_norm, sigma_norm)
+        prior_beliefs = np.array([prog_cons, left_right])
+
+        agent = Wappie(unique_id=unique_id, 
+                        model=self,
+                        grid_pos=grid_pos,
+                        prior_beliefs=prior_beliefs)
+
+        self.grid.place_agent(agent, grid_pos)
+        # print(agent.pos)
+            
+        self.network.place_agent(agent, unique_id)
+        # print(agent.pos)
+
+        self.schedule.add(agent)
+
+        self.agents[unique_id] = agent
+
     def polarization(self):
         """Calculates the polarization in the model.
         Source:
@@ -123,9 +120,9 @@ class Political_spectrum(Model):
         Returns:
             _type_: _description_
         """
-        # only measure every 10 steps
-        # if self.num_steps % 10 != 0:
-        #     return
+        # only measure every 100 steps
+        if self.num_steps % 100 != 0:
+            return
         
         polarization = []
         for agent1_index in range(self.num_agents):
