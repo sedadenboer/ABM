@@ -112,7 +112,7 @@ def single_polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2,
     sns.set_style("whitegrid")
     sns.lineplot(data, palette=['royalblue'], errorbar=('ci', 95), legend=False)
     plt.xlabel('timestep')
-    plt.ylabel('polarisation')
+    plt.ylabel('polarization')
     
     plt.savefig(
         f"{path}/experiments/pol_rep={repeats}_width={width}_net={network_type}_gridpref={grid_preference}.png",
@@ -159,7 +159,7 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
     sns.lineplot(data = network_comparison_df.reset_index(), y = 'pol_ind', x = 'step', hue = 'network',
                  palette=['royalblue', 'coral', 'mediumaquamarine', 'plum'], ci=95)
     plt.xlabel('timestep')
-    plt.ylabel('polarisation')
+    plt.ylabel('polarization')
     plt.legend(title='Network type')
     plt.savefig(f"{path}/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}.png",
                 dpi=400)
@@ -197,7 +197,7 @@ def comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
     sns.lineplot(compare_grid_network_df,
                  palette="rocket", errorbar=('ci', 95))
     plt.xlabel('timestep')
-    plt.ylabel('polarisation')
+    plt.ylabel('polarization')
     plt.legend(title='Grid preference')
     plt.savefig(
         f"{path}/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}.png",
@@ -284,7 +284,6 @@ def compare_d1_d2(max_steps, repeats, width, lambd, mu,
 
     # combine all data
     final_df = pd.concat(final_df)
-    print(final_df)
 
     # save data
     final_df.to_csv(
@@ -296,9 +295,11 @@ def compare_d1_d2(max_steps, repeats, width, lambd, mu,
     plt.figure()
     sns.set_style("whitegrid")
     result = final_df.pivot(index='d2', columns='d1', values='mean polarization')
-    sns.heatmap(result)
+    sns.heatmap(result, cmap='flare', cbar_kws={'label': 'mean polarization'})
+    plt.xlabel(r'$d_1$', fontsize=16)
+    plt.ylabel(r'$d_2$', fontsize=16)
     plt.gca().invert_yaxis()
-    plt.yticks(rotation=45, ha='right')
+    plt.yticks(rotation=0, ha='right')
     plt.tight_layout()
     plt.savefig(f"../output_files/experiments/compare_pol_d1_d2={repeats}_width={width}_mu={mu}_lambd={lambd}.png",
                 dpi=400)
@@ -307,9 +308,11 @@ def compare_d1_d2(max_steps, repeats, width, lambd, mu,
     plt.figure()
     sns.set_style("whitegrid")
     result = final_df.pivot(index='d2', columns='d1', values='variance')
-    sns.heatmap(result, cmap="BuPu")
+    sns.heatmap(result, cmap='crest', cbar_kws={'label': 'polarization variance'})
+    plt.xlabel(r'$d_1$', fontsize=16)
+    plt.ylabel(r'$d_2$', fontsize=16)
     plt.gca().invert_yaxis()
-    plt.yticks(rotation=45, ha='right')
+    plt.yticks(rotation=0, ha='right')
     plt.tight_layout()
     plt.savefig(f"../output_files/experiments/compare_var_d1_d2={repeats}_width={width}_mu={mu}_lambd={lambd}.png",
                 dpi=400)
@@ -319,7 +322,7 @@ if __name__ == "__main__":
     # set default parameters
     max_steps=100 # should be a multiple of 10!
     repeats=20
-    width=20
+    width=50
     lambd=0.05
     mu=0.20
     d1=0.35
@@ -332,27 +335,20 @@ if __name__ == "__main__":
     # # BASIC POLARIZATION TREND
     # single_polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2,
     #                          network_type, grid_preference, grid_radius, both_affected)
-
-    # # COMPARE DIFFERENT NETWORK TYPES
-    network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
-                       grid_preference, grid_radius, both_affected)
   
     # # INFLUENCE OF NETWORK VS. GRID FOR SOME GRID PREFERENCE VALUES
     # comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
     #                         network_type, grid_radius, both_affected)
 
+    # COMPARE DIFFERENT NETWORK TYPES
+    network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
+                       grid_preference, grid_radius, both_affected)
 
     # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
-    #grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
-
-    # # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
-    # grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
+    grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
 
     # VARYING D1 AND D2
     compare_d1_d2(max_steps, repeats, width, lambd, mu,
                   network_type, grid_preference, grid_radius, both_affected)
-
-    # PAIRPLOT?
-    #TODO
 
     plt.show()
