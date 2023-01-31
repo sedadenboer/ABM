@@ -149,12 +149,15 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
         f"{path}/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}.csv",
         index=False
         )
-
+    column = ['Barabási–Albert', 'Idealised', 'Erdős–Rényi', 'Complete']
+    network_comparison_df = network_comparison_df.melt(value_vars=column, ignore_index = False)
+    network_comparison_df.columns = ['network', 'pol_ind']
+    network_comparison_df['step'] = network_comparison_df.index
     # plotting
     plt.figure()
     sns.set_style("whitegrid")
-    sns.lineplot(network_comparison_df,
-                 palette=['royalblue', 'coral', 'mediumaquamarine', 'plum'], errorbar=('ci', 95))
+    sns.lineplot(data = network_comparison_df.reset_index(), y = 'pol_ind', x = 'step', hue = 'network',
+                 palette=['royalblue', 'coral', 'mediumaquamarine', 'plum'], ci=95)
     plt.xlabel('timestep')
     plt.ylabel('polarisation')
     plt.legend(title='Network type')
@@ -331,19 +334,24 @@ if __name__ == "__main__":
     #                          network_type, grid_preference, grid_radius, both_affected)
 
     # # COMPARE DIFFERENT NETWORK TYPES
-    # network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
-    #                   grid_preference, grid_radius, both_affected)
+    network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
+                       grid_preference, grid_radius, both_affected)
   
     # # INFLUENCE OF NETWORK VS. GRID FOR SOME GRID PREFERENCE VALUES
     # comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
     #                         network_type, grid_radius, both_affected)
 
+<<<<<<< HEAD
+    # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
+    #grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
+=======
     # # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
     # grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
 
     # VARYING D1 AND D2
     compare_d1_d2(max_steps, repeats, width, lambd, mu,
                   network_type, grid_preference, grid_radius, both_affected)
+>>>>>>> 37533c69f50b6274f60d1472bb369d0c4ecc9ec8
 
     # PAIRPLOT?
     #TODO
