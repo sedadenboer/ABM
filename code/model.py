@@ -16,7 +16,7 @@ class Political_spectrum(Model):
 
     def __init__(
         self,
-        width: int = 10,
+        width: int = 20,
         lambd: float = 0.5,
         mu: float = 0.20,
         d1: float = 0.7,

@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import multiprocessing as mp
 import os
 
+from itertools import combinations
+
 from model import Political_spectrum
 
 from visualize_beliefs import get_output_path
@@ -52,7 +54,7 @@ def ofat_sensitivity_analysis(from_data: bool, save_data=True):
 
     # all it needs is pretty plots!
 
-def create_samples(problem, num_samples, second_order: bool, save_data: bool = False):
+def create_samples(problem, num_samples, second_order: bool, save_data: bool = False, save_as: str = None):
     param_values = np.array(sobol_sample.sample(problem, num_samples, calc_second_order=second_order))
     parameters = {}
     parameters_list = []
@@ -60,10 +62,6 @@ def create_samples(problem, num_samples, second_order: bool, save_data: bool = F
         variables = {}
         for name, val in zip(problem["names"], param_values[run]):
             variables[name] = val
-
-        # only create samples where d1 < d2: <- this might not be usefull, since sobol.analyse does not use it...
-        if variables["d1"] > variables["d2"]: # NOTE maybe just remove this since the model does it for us? 
-            variables["d2"] = np.sqrt(2)
 
         # make sure the network is chosen as index
         variables["network_type"] = int(variables["network_type"])
@@ -78,7 +76,7 @@ def create_samples(problem, num_samples, second_order: bool, save_data: bool = F
     if save_data:
         df = pd.DataFrame(parameters_list)
         path = get_output_path()
-        df.to_csv(f"{path}/samples/_sensitivity_analysis_samples.csv", index=False)
+        df.to_csv(f"{path}/samples/{save_as}_samples.csv", index=False)
         
     return parameters_list
 
@@ -95,12 +93,12 @@ def run_batch_model(parameters):
     return batch
 
 
-def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_data: bool, samples=None, number_processes = None, save_data: bool = False):
+def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_data: bool, save_as: str=None, samples=None, number_processes = None, save_data: bool = False):
 
     if from_data:
         # load the samples
         path = get_output_path()
-        df = pd.read_csv(f"{path}/samples/sensitivity_analysis_samples.csv")
+        df = pd.read_csv(f"{path}/samples/{save_as}_samples.csv")
         samples = df.to_dict("records")
     else:
         # make sure samples are given
@@ -135,7 +133,7 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
             if save_data:
                 path = get_output_path()
                 user = os.environ.get('USER', os.environ.get('USERNAME'))
-                data.to_csv(f"{path}/run_data/sensitivity_analysis_{user}_{rep}.csv", index=False)
+                data.to_csv(f"{path}/run_data/{save_as}_{user}_{rep}.csv", index=False)
 
             print(data)
         pool.close()
@@ -145,14 +143,48 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
 
     return data
 
-def sobol_analyze_data(problem, from_file: bool=True, data=None, second_order:bool=False):
+def plot_index(s, params, i, title=''):
+    """
+    Creates a plot for Sobol sensitivity analysis that shows the contributions
+    of each parameter to the global sensitivity.
+
+    Args:
+        s (dict): dictionary {'S#': dict, 'S#_conf': dict} of dicts that hold
+            the values for a set of parameters
+        params (list): the parameters taken from s
+        i (str): string that indicates what order the sensitivity is.
+        title (str): title for the plot
+    """
+
+    if i == '2':
+        p = len(params)
+        params = list(combinations(params, 2))
+        indices = s['S' + i].reshape((p ** 2))
+        indices = indices[~np.isnan(indices)]
+        errors = s['S' + i + '_conf'].reshape((p ** 2))
+        errors = errors[~np.isnan(errors)]
+    else:
+        indices = s['S' + i]
+        errors = s['S' + i + '_conf']
+        plt.figure()
+
+    l = len(indices)
+
+    plt.title(title)
+    plt.ylim([-0.2, len(indices) - 1 + 0.2])
+    plt.yticks(range(l), params)
+    plt.errorbar(indices, range(l), xerr=errors, linestyle='None', marker='o')
+    plt.axvline(0, c='k')
+    plt.tight_layout()
+
+def sobol_analyze_data(problem, from_file: bool=True, save_as: str=None, data=None, second_order:bool=False):
     if from_file:
         dfs = []
         # find all runs and concatenate dataframes
         path = get_output_path()
         files = os.listdir(f"{path}/run_data")
         for file in files:
-            if file.startswith("sensitivity_analysis_") and file.endswith(".csv"):
+            if file.startswith(save_as) and file.endswith(".csv"):
                 # get data
                 df = pd.read_csv(f"{path}/run_data/{file}")
                 dfs.append(df)
@@ -161,35 +193,82 @@ def sobol_analyze_data(problem, from_file: bool=True, data=None, second_order:bo
         print(data.head())
         print(data.size)
 
-    
-    # Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)
-    # Si_network_influence = sobol_analyse.analyze(problem, data["network_influence"].values, calc_second_order=second_order, print_to_console=True)
+    Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)
+    Si_network_influence = sobol_analyze.analyze(problem, pd.concat(dfs[0:7])["network_influence"].values, calc_second_order=second_order, print_to_console=True)
+
+    path = get_output_path()
+
+    # first order
+    plot_index(Si_polarization, problem['names'], '1', 'First order sensitivity')
+    plt.savefig(f"{path}/images/{save_as}_polarization_1.png")
+    plt.show()
+
+    # second order
+    if second_order:
+        plot_index(Si_polarization, problem['names'], '2', 'Second order sensitivity')
+        plt.savefig(f"{path}/images/{save_as}_polarization_2.png")
+        plt.show()
+
+    # total order
+    plot_index(Si_polarization, problem['names'], 'T', 'Total order sensitivity')
+    plt.savefig(f"{path}/images/{save_as}_polarization_T.png")
+    plt.show()
+
+
+    network_names = problem['names'].copy()
+    network_names.remove("network_type")
+    network_names.remove("mu")
+    print(network_names)
+    copy_Si = Si_network_influence.copy()
+    for key in copy_Si:
+        value = copy_Si[key]
+        print(value)
+        value = np.concatenate([value[:1], value[2:4], value[5:]])
+        copy_Si[key] = value
+        print(value)
+    # first order
+    plot_index(copy_Si, network_names, '1', 'First order sensitivity')
+    plt.savefig(f"{path}/images/{save_as}_networkinfluence_1.png")
+    plt.show()
+
+    if second_order:
+        plot_index(copy_Si, network_names, '2', 'Second order sensitivity')
+        plt.savefig(f"{path}/images/{save_as}_networkinfluence_2.png")
+        plt.show()
+
+    # total order
+    plot_index(copy_Si, network_names, 'T', 'Total order sensitivity')
+    plt.savefig(f"{path}/images/{save_as}_networkinfluence_T.png")
+    plt.show()
 
 if __name__ == "__main__":
+
+    save_as = "sa_overnight"
 
     problem = {
     "num_vars": 8,
     "names": ["lambd", "mu", "d1", "d2", "network_type", "grid_preference", "grid_radius", "both_affected"],
-    "bounds": [[0, 1], [0, 1], [0, np.sqrt(2)], [0, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
+    "bounds": [[0, 0.5], [0, 0.5], [0, np.sqrt(2)/2], [np.sqrt(2)/2, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
 
     second_order = False
 
     # samples = create_samples(problem=problem,
-    #                         num_samples=2,
+    #                         num_samples=64,
     #                         second_order=second_order,
-    #                         save_data=True)
+    #                         save_data=True,
+    #                         save_as=save_as)
 
     # data = sobol_run_samples(problem=problem,
-    #                         repeats=4,
+    #                         repeats=8,
     #                         max_steps=100,
     #                         data_collection_period=-1,
     #                         from_data=True,
+    #                         save_as=save_as,
     #                         samples=None,
     #                         number_processes=None,
     #                         save_data=True)
 
     sobol_analyze_data(problem=problem,
                     from_file=True,
+                    save_as=save_as,
                     second_order=second_order)
-    
-    # Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)

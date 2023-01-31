@@ -28,12 +28,9 @@ class Wappie(Agent):
         neighbor_beliefs_copy = copy.copy(other.beliefs)
 
         # update beliefs of agent and interacting connection
-        beliefs_copy += self.model.mu * (self.beliefs - other.beliefs)
-        self.beliefs = beliefs_copy
-        
+        self.beliefs += self.model.mu * (neighbor_beliefs_copy - beliefs_copy)
         if self.model.both_affected:
-            neighbor_beliefs_copy += self.model.mu * (other.beliefs - self.beliefs)
-            other.beliefs = neighbor_beliefs_copy
+            other.beliefs += self.model.mu * (beliefs_copy - neighbor_beliefs_copy)
 
     def normalisation(self, x):
         """"""
@@ -117,7 +114,7 @@ class Wappie(Agent):
     
     def satisfied(self):
         pass
-    
+
     def move(self):
         # find the position that has the most neighbours like itself
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=1)
