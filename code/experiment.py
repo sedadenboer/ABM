@@ -314,9 +314,9 @@ def compare_d1_d2(max_steps, repeats, width, lambd, mu,
 
 if __name__ == "__main__":
     # set default parameters
-    max_steps=10 # should be a multiple of 10!
-    repeats=2
-    width=10
+    max_steps=100 # should be a multiple of 10!
+    repeats=20
+    width=20
     lambd=0.05
     mu=0.20
     d1=0.35
