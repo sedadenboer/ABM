@@ -341,17 +341,16 @@ if __name__ == "__main__":
     # comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
     #                         network_type, grid_radius, both_affected)
 
-<<<<<<< HEAD
+
     # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
     #grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
-=======
+
     # # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
     # grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
 
     # VARYING D1 AND D2
     compare_d1_d2(max_steps, repeats, width, lambd, mu,
                   network_type, grid_preference, grid_radius, both_affected)
->>>>>>> 37533c69f50b6274f60d1472bb369d0c4ecc9ec8
 
     # PAIRPLOT?
     #TODO
