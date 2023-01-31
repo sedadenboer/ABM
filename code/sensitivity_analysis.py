@@ -243,25 +243,62 @@ def sobol_analyze_data(problem, from_file: bool=True, save_as: str=None, data=No
 
 if __name__ == "__main__":
 
-    save_as = "sa_overnight"
-
-    problem = {
-    "num_vars": 8,
-    "names": ["lambd", "mu", "d1", "d2", "network_type", "grid_preference", "grid_radius", "both_affected"],
-    "bounds": [[0, 0.5], [0, 0.5], [0, np.sqrt(2)/2], [np.sqrt(2)/2, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
+    save_as = "new_sa"
 
     # problem = {
-    # "num_vars": 9,
-    # "names": ["width", "lambd", "mu", "d1", "d2", "network_type", "grid_preference", "grid_radius", "both_affected"],
-    # "bounds": [[5, 33], [0, 0.5], [0, 0.5], [0, np.sqrt(2)/2], [np.sqrt(2)/2, np.sqrt(2)], [0, len(Political_spectrum.network_types)], [0, 1], [1, 4], [0,1]]}
+    # "num_vars": 8,
+    # "names": ["lambd",
+    #             "mu",
+    #             "d1",
+    #             "d2",
+    #             "network_type",
+    #             "grid_preference",
+    #             "grid_radius",
+    #             "both_affected"],
+    # "bounds": [[0, 0.5],
+    #             [0, 0.5],
+    #             [0, np.sqrt(2)/2],
+    #             [np.sqrt(2)/2, np.sqrt(2)],
+    #             [0, len(Political_spectrum.network_types)],
+    #             [0, 1],
+    #             [1, 4],
+    #             [0,1]]
+    # }
+
+    problem = {
+    "num_vars": 12,
+    "names": ["width",
+                "lambd",
+                "mu",
+                "d1",
+                "d2",
+                "satisfaction_distance",
+                "satisfaction_threshold",
+                "network_type",
+                "grid_preference",
+                "grid_radius",
+                "grid_density",
+                "both_affected"],
+    "bounds": [[5, 33],
+                [0, 0.5],
+                [0, 0.5],
+                [0, np.sqrt(2)/2],
+                [np.sqrt(2)/2, np.sqrt(2)],
+                [0, np.sqrt(2)],
+                [-0.5, 0.5],
+                [0, len(Political_spectrum.network_types)],
+                [0, 1],
+                [1, 4],
+                [0.5, 1],
+                [0, 1]]}
 
     second_order = False
 
-    # samples = create_samples(problem=problem,
-    #                         num_samples=64,
-    #                         second_order=second_order,
-    #                         save_data=True,
-    #                         save_as=save_as)
+    samples = create_samples(problem=problem,
+                            num_samples=64,
+                            second_order=second_order,
+                            save_data=True,
+                            save_as=save_as)
 
     # data = sobol_run_samples(problem=problem,
     #                         repeats=8,
@@ -273,7 +310,7 @@ if __name__ == "__main__":
     #                         number_processes=None,
     #                         save_data=True)
 
-    sobol_analyze_data(problem=problem,
-                    from_file=True,
-                    save_as=save_as,
-                    second_order=second_order)
+    # sobol_analyze_data(problem=problem,
+    #                 from_file=True,
+    #                 save_as=save_as,
+    #                 second_order=second_order)

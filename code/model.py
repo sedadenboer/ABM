@@ -72,7 +72,7 @@ class Political_spectrum(Model):
         self.lambd = lambd
         self.mu = mu
         self.p_grid = grid_preference
-        self.p_network = 1 - grid_preference
+        # self.p_network = 1 - grid_preference
         self.both_affected = both_affected
 
         # set the datacollector
