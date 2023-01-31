@@ -14,7 +14,26 @@ class Wappie(Agent):
         self.interacting_neighbor = None
         self.unique_id = unique_id
         self.grid_pos = grid_pos
+        self.influenced_by_grid = 0
+        self.influenced_by_network = 0
+        self._tracker = "grid"
         # print(self.pos)
+
+    def set_influence_tracker(self, to_change: str):
+        assert to_change == "grid" or to_change == "network"
+        self._tracker = to_change
+
+    @property
+    def influence_tracker(self):
+        if self._tracker == "grid":
+            return self.influenced_by_grid
+        return self.influenced_by_network
+    
+    @influence_tracker.setter
+    def influence_tracker(self, value):
+        if self._tracker == "grid":
+            self.influenced_by_grid = value
+        self.influenced_by_network = value
 
     def distance(self, other):
         """ """
@@ -100,15 +119,19 @@ class Wappie(Agent):
             if not neighbors_grid:
                 return
             interacting_neighbor = self.random.choice(neighbors_grid)
+            self.set_influence_tracker("grid")
         else:
             if not neighbors_network:
                 return
+            self.set_influence_tracker("network")
             interacting_neighbor = self.random.choice(neighbors_network)
 
         if self.distance(interacting_neighbor) < self.model.d1:
             self.assimilation(interacting_neighbor)
+            self.influence_tracker += 1
         elif self.distance(interacting_neighbor) > self.model.d2:
             self.contrast(interacting_neighbor)
+            self.influence_tracker += 1
     
     def satisfied(self):
         """Arcón, Victoria, Juan Pablo Pinasco, and Inés Caridi.
@@ -138,7 +161,6 @@ class Wappie(Agent):
         # find the position that has the most neighbours like itself
         new_pos = self.model.grid.find_empty()
         if new_pos:
-            print(new_pos)
             self.pos = self.grid_pos
             self.model.grid.move_agent(self, new_pos)
             self.grid_pos = new_pos
