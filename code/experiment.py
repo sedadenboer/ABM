@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from model import Political_spectrum
 
+from visualize_beliefs import get_output_path
+
 
 def get_polarization(max_steps, width, lambd, mu, d1, d2,
                      network_type, grid_preference, grid_radius, both_affected):
@@ -99,8 +101,9 @@ def single_polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2,
                               network_type, grid_preference, grid_radius, both_affected)
 
     # save data 
+    path = get_output_path()
     data.to_csv(
-        f"..output_files/experiments/saved_data/pol_rep={repeats}_width={width}_net={network_type}_gridpref={grid_preference}.csv",
+        f"{path}/experiments/saved_data/pol_rep={repeats}_width={width}_net={network_type}_gridpref={grid_preference}.csv",
         index=False
         )
 
@@ -110,8 +113,9 @@ def single_polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2,
     sns.lineplot(data, palette=['royalblue'], errorbar=('ci', 95), legend=False)
     plt.xlabel('timestep')
     plt.ylabel('polarisation')
+    
     plt.savefig(
-        f"../output_files/experiments/pol_rep={repeats}_width={width}_net={network_type}_gridpref={grid_preference}.png",
+        f"{path}/experiments/pol_rep={repeats}_width={width}_net={network_type}_gridpref={grid_preference}.png",
         dpi=400
         )
 
@@ -140,8 +144,9 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
         inplace=True)
 
     # save data 
+    path = get_output_path()
     network_comparison_df.to_csv(
-        f"../output_files/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}.csv",
+        f"{path}/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}.csv",
         index=False
         )
 
@@ -153,7 +158,7 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
     plt.xlabel('timestep')
     plt.ylabel('polarisation')
     plt.legend(title='Network type')
-    plt.savefig(f"../output_files/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}.png",
+    plt.savefig(f"{path}/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}.png",
                 dpi=400)
 
 
@@ -177,8 +182,9 @@ def comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
         compare_grid_network_df[preference] = data
 
     # save data 
+    path = get_output_path()
     compare_grid_network_df.to_csv(
-        f"../output_files/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}.csv",
+        f"{path}/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}.csv",
         index=False
         )
 
@@ -191,7 +197,7 @@ def comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
     plt.ylabel('polarisation')
     plt.legend(title='Grid preference')
     plt.savefig(
-        f"../output_files/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}.png",
+        f"{path}/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}.png",
         dpi=400
         )
 
@@ -227,8 +233,9 @@ def grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_ra
     final_df = final_df.replace(formal_names)
 
     # save data
+    path = get_output_path()
     final_df.to_csv(
-        f"../output_files/experiments/saved_data/networks_vs_grid={repeats}_width={width}_net={network_type}.csv",
+        f"{path}/experiments/saved_data/networks_vs_grid={repeats}_width={width}_net={network_type}.csv",
         index=False
         )
 
@@ -238,7 +245,7 @@ def grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_ra
     sns.lineplot(data=final_df, x='grid preference', y='polarization', hue='network',
                  palette=['royalblue', 'coral', 'mediumaquamarine', 'plum'], errorbar=('ci', 95))
     plt.legend(title='Network type')
-    plt.savefig(f"../output_files/experiments/grid_pref_vs_polarization_rep={repeats}_width={width}.png",
+    plt.savefig(f"{path}/experiments/grid_pref_vs_polarization_rep={repeats}_width={width}.png",
                 dpi=400)
 
 

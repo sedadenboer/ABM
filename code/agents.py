@@ -111,14 +111,39 @@ class Wappie(Agent):
             self.contrast(interacting_neighbor)
     
     def satisfied(self):
-        pass
+        """Arcón, Victoria, Juan Pablo Pinasco, and Inés Caridi.
+        "A Schelling-Opinion Model Based on Integration of Opinion Formation
+        with Residential Segregation." Causes and Symptoms of Socio-Cultural
+        Polarization: Role of Information and Communication Technologies.
+        Singapore: Springer Singapore, 2022. 27-50.
+
+        Returns:
+            _type_: _description_
+        """
+        # get grid neighbors
+        neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=1)
+
+        # is this agent satisfied?
+        satisfaction = 0
+        for neighbor in neighbors_grid:
+            if self.distance(neighbor) < self.model.ds:
+                # satisfied
+                satisfaction += 1
+            else:
+                satisfaction -= 1
+        
+        return satisfaction / len(neighbors_grid) > self.model.threshold
 
     def move(self):
         # find the position that has the most neighbours like itself
-        neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=1)
-        
+        new_pos = self.model.grid.find_empty()
+        if new_pos:
+            print(new_pos)
+            self.pos = self.grid_pos
+            self.model.grid.move_agent(self, new_pos)
+            self.grid_pos = new_pos
+
     def step(self):
         self.interact()
         if not self.satisfied():
             self.move()
-
