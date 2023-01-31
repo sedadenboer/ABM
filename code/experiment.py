@@ -202,7 +202,7 @@ def grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_ra
     network_types = ['BA', 'idealised', 'erdos-renyi', 'complete']
 
     # set range of grid preference probabilities
-    grid_preference = list(np.arange(0, 1, 0.1))
+    grid_preference = list(np.arange(0, 1, 0.05))
 
     final_df = []
 
@@ -242,7 +242,7 @@ def grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_ra
 
 if __name__ == "__main__":
     # set default parameters
-    max_steps=200 # should be a multiple of 10!
+    max_steps=100 # should be a multiple of 10!
     repeats=20
     width=20
     lambd=0.05
