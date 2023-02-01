@@ -138,7 +138,6 @@ class Wappie(Agent):
         # find the position that has the most neighbours like itself
         new_pos = self.model.grid.find_empty()
         if new_pos:
-            print(new_pos)
             self.pos = self.grid_pos
             self.model.grid.move_agent(self, new_pos)
             self.grid_pos = new_pos

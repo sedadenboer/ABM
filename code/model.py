@@ -121,7 +121,7 @@ class Political_spectrum(Model):
             _type_: _description_
         """
         # only measure every 100 steps
-        if self.num_steps % 100 != 0:
+        if self.num_steps % 5 != 0:
             return
         
         polarization = []
@@ -136,7 +136,7 @@ class Political_spectrum(Model):
         # return sum(polarization)
 
     def influenced_by_network(self):
-        if self.num_steps % 100 != 0:
+        if self.num_steps % 50 != 0:
             return
             
         influences = []
