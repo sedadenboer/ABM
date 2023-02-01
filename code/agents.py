@@ -132,6 +132,10 @@ class Wappie(Agent):
             else:
                 satisfaction -= 1
         
+        # avoid errors
+        if len(neighbors_grid) == 0:
+            return 1
+
         return satisfaction / len(neighbors_grid) > self.model.threshold
 
     def move(self):

@@ -31,9 +31,8 @@ def get_polarization(max_steps, width, lambd, mu, d1, d2, network_type,
     results = mesa.batch_run(
         Political_spectrum,
         parameters=params,
-        iterations=1,
         max_steps=max_steps,
-        number_processes=1,
+        number_processes=None,
         data_collection_period=1,
         display_progress=True,
     )
@@ -121,6 +120,46 @@ def single_polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2, netw
         )
 
 
+def comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
+                            network_type, grid_radius, grid_density, both_affected):
+    """
+    Makes lineplots for the polarization trend from experiment data
+    for a varying grid preference. Like this, we can investigate the 
+    effect of interactions with people from the network or the grid.
+    """
+    # set range of grid preference probabilities
+    grid_preference = np.linspace(0.0, 1.0, num=5)
+    compare_grid_network_df = pd.DataFrame()
+
+    # run experiments for all grid preferences
+    for preference in grid_preference:
+        data = polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2, network_type,
+                                  preference, grid_radius, grid_density, both_affected)
+
+        # put data in dataframe
+        compare_grid_network_df[preference] = data
+
+    # save data 
+    path = get_output_path()
+    compare_grid_network_df.to_csv(
+        f"{path}/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}_dens={grid_density}.csv",
+        index=False
+        )
+
+    # plotting
+    plt.figure()
+    sns.set_style("whitegrid")
+    sns.lineplot(compare_grid_network_df,
+                 palette="rocket", errorbar=('ci', 95))
+    plt.xlabel('timestep')
+    plt.ylabel('polarization')
+    plt.legend(title='Grid preference')
+    plt.savefig(
+        f"{path}/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}_dens={grid_density}.png",
+        dpi=400
+        )
+
+
 def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
                        grid_preference, grid_radius, grid_density, both_affected):
     """
@@ -166,48 +205,8 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
                 dpi=400)
 
 
-def comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
-                            network_type, grid_radius, grid_density, both_affected):
-    """
-    Makes lineplots for the polarization trend from experiment data
-    for a varying grid preference. Like this, we can investigate the 
-    effect of interactions with people from the network or the grid.
-    """
-    # set range of grid preference probabilities
-    grid_preference = np.linspace(0.0, 1.0, num=5)
-    compare_grid_network_df = pd.DataFrame()
-
-    # run experiments for all grid preferences
-    for preference in grid_preference:
-        data = polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2, network_type,
-                                  preference, grid_radius, grid_density, both_affected)
-
-        # put data in dataframe
-        compare_grid_network_df[preference] = data
-
-    # save data 
-    path = get_output_path()
-    compare_grid_network_df.to_csv(
-        f"{path}/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}_dens={grid_density}.csv",
-        index=False
-        )
-
-    # plotting
-    plt.figure()
-    sns.set_style("whitegrid")
-    sns.lineplot(compare_grid_network_df,
-                 palette="rocket", errorbar=('ci', 95))
-    plt.xlabel('timestep')
-    plt.ylabel('polarization')
-    plt.legend(title='Grid preference')
-    plt.savefig(
-        f"{path}/experiments/networks_vs_grid={repeats}_width={width}_net={network_type}_dens={grid_density}.png",
-        dpi=400
-        )
-
-
 def grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2,
-                                    grid_radius, grid_density, both_affected):
+                                    grid_radius, grid_density, both_affected, repeats):
     """
     Makes lineplots with grid preference vs. polarization
     for every type of network.
@@ -328,7 +327,7 @@ if __name__ == "__main__":
     lambd=0.05
     mu=0.20
     d1=0.35
-    d2=1.5
+    d2=0.5
     network_type="BA"
     grid_preference=0.5
     grid_radius=2
@@ -343,24 +342,24 @@ if __name__ == "__main__":
     # comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
     #                         network_type, grid_radius, grid_density, both_affected)
 
-    # COMPARE DIFFERENT NETWORK TYPES
-    network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
-                       grid_preference, grid_radius, grid_density, both_affected)
-
+    # # COMPARE DIFFERENT NETWORK TYPES
+    # network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
+    #                    grid_preference, grid_radius, grid_density, both_affected)
+    
     # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
     grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2,
-                                    grid_radius, grid_density, both_affected)
+                                    grid_radius, grid_density, both_affected, repeats)
 
     # VARYING D1 AND D2 FOR DIFFERENT MU AND LAMBDA COMBINATIONS
-    compare_d1_d2(max_steps, repeats, width, lambd, mu,
-                  network_type, grid_preference, grid_radius, grid_density, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.05, 0.05,
-                  network_type, grid_preference, grid_radius, grid_density, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.4, 0.4,
-                  network_type, grid_preference, grid_radius, grid_density, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.05, 0.4,
-                  network_type, grid_preference, grid_radius, grid_density, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.4, 0.05,
-                  network_type, grid_preference, grid_radius, grid_density, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, lambd, mu,
+    #               network_type, grid_preference, grid_radius, grid_density, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.05, 0.05,
+    #               network_type, grid_preference, grid_radius, grid_density, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.4, 0.4,
+    #               network_type, grid_preference, grid_radius, grid_density, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.05, 0.4,
+    #               network_type, grid_preference, grid_radius, grid_density, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.4, 0.05,
+    #               network_type, grid_preference, grid_radius, grid_density, both_affected)
 
     plt.show()
