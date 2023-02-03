@@ -205,13 +205,12 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
                 dpi=400)
 
 
-def grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2,
+def grid_preference_vs_polarization(network_types, max_steps, width, lambd, mu, d1, d2,
                                     grid_radius, grid_density, both_affected, repeats):
     """
     Makes lineplots with grid preference vs. polarization
     for every type of network.
     """
-    network_types = ['BA', 'idealised', 'erdos-renyi', 'complete']
 
     # set range of grid preference probabilities
     grid_preference = list(np.arange(0, 1, 0.05))
@@ -333,6 +332,7 @@ if __name__ == "__main__":
     grid_radius=2
     grid_density=0.95
     both_affected=True
+    network_types = ['BA']
 
     # # BASIC POLARIZATION TREND
     # single_polarization_trend(max_steps, repeats, width, lambd, mu, d1, d2,
@@ -347,7 +347,7 @@ if __name__ == "__main__":
     #                    grid_preference, grid_radius, grid_density, both_affected)
     
     # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
-    grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2,
+    grid_preference_vs_polarization(network_types, max_steps, width, lambd, mu, d1, d2,
                                     grid_radius, grid_density, both_affected, repeats)
 
     # VARYING D1 AND D2 FOR DIFFERENT MU AND LAMBDA COMBINATIONS
