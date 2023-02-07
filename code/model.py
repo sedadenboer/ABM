@@ -23,7 +23,7 @@ class Political_spectrum(Model):
         mu_norm: float = 0.5,
         sigma_norm: float = 0.2,
         network_type: str = "BA",
-        grid_preference: float = 0.5,
+        grid_preference: float = None,
         grid_radius: int = 2,
         grid_density: float = 1,
         both_affected: bool = True
@@ -76,9 +76,7 @@ class Political_spectrum(Model):
         self.both_affected = both_affected
 
         # set the datacollector
-        model_reporters = {"polarization": lambda m: m.polarization(),
-                        "network_influence": lambda m: m.influenced_by_network()}
-                        # "step": lambda m: m.num_steps}
+        model_reporters = {"polarization": lambda m: m.polarization()}
         self.datacollector = DataCollector(model_reporters=model_reporters)
 
         # turn the model on
@@ -138,22 +136,6 @@ class Political_spectrum(Model):
             raise ZeroDivisionError
 
         return sum(polarization) / len(polarization)
-        # return sum(polarization)
-
-    def influenced_by_network(self):
-        return
-        if self.num_steps % 50 != 0:
-            return
-            
-        influences = []
-        for agent_id in self.agents:
-            agent = self.agents[agent_id]
-            if agent.distance_in_network() == 0:
-                influenced = 0
-            else:
-                influenced = agent.distance_in_grid() / agent.distance_in_network()
-            influences.append(influenced)
-        return sum(influences) / self.num_agents
 
     def step(self):
         self.schedule.step()
@@ -161,27 +143,23 @@ class Political_spectrum(Model):
         self.datacollector.collect(self)
 
 if __name__ == "__main__":
-    # model = Political_spectrum(10, 10, "scale_free")
-    # nx.draw_kamada_kawai(model.G, node_size=50)
-    # plt.savefig("../kamada_kawai.png")
-
     # set parameters for Gaussian distribution
     mu = 0.5
     sigma = np.sqrt(0.2)
 
     # initialise model
     model = Political_spectrum(
-        width=25,
-        lambd=0.05,
+        width=10,
+        lambd=0.5,
         mu=0.20,
         d1=0.35,
-        d2=1.5,
+        d2=1.0,
         mu_norm=mu,
         sigma_norm=sigma,
-        network_type="erdos-renyi",
-        grid_preference=0.5,
+        network_type="complete",
         grid_radius=2,
-        both_affected=True
+        both_affected=True,
+        grid_density=0.95
     )
 
     for _ in range(50):

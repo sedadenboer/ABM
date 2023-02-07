@@ -6,7 +6,23 @@ import copy
 
 
 class Wappie(Agent):
-    def __init__(self, unique_id: int, model: Model, grid_pos, prior_beliefs) -> None:
+    def __init__(self, 
+                 unique_id: int,
+                 model: Model,
+                 grid_pos: tuple,
+                 prior_beliefs: tuple) -> None:
+        """The agents of the Policital_Spectrum model.
+        Has a position in both the grid and the network of the model.
+        Changes belief based on its connections on the grid and in the network.
+
+        Args:
+            unique_id (int): The id of the agent.
+            model (Model): The model this agent belongs to.
+            grid_pos (tuple[int]): The position of this agent in the grid.
+            prior_beliefs (tuple[float]): The initial belief of this agent.
+                Consist of two floats corresponding to the x and y position in
+                the belief space.
+        """
         super().__init__(unique_id, model)
 
         self.beliefs = prior_beliefs
@@ -14,12 +30,61 @@ class Wappie(Agent):
         self.interacting_neighbor = None
         self.unique_id = unique_id
         self.grid_pos = grid_pos
-        # print(self.pos)
+        self.influenced_by_grid = 0
+        self.influenced_by_network = 0
+        self._tracker = "grid"
+
+    def set_influence_tracker(self, to_change: str):
+        assert to_change == "grid" or to_change == "network"
+        self._tracker = to_change
+
+    @property
+    def influence_tracker(self):
+        if self._tracker == "grid":
+            return self.influenced_by_grid
+        return self.influenced_by_network
+    
+    @influence_tracker.setter
+    def influence_tracker(self, value):
+        if self._tracker == "grid":
+            self.influenced_by_grid = value
+        self.influenced_by_network = value
 
     def distance(self, other):
-        """ """
-        # print(self.beliefs, other.beliefs)
+        """Determine the distance in belief between this agent and another.
+        Uses eudclidean distance
+
+        Args:
+            other (Wappie): The agent to determine the distance to.
+
+        Returns:
+            float: The distance between the two agents.
+        """
         return distance.euclidean(list(self.beliefs), list(other.beliefs))
+
+    def normalisation(self, x):
+        """Makes sure the coordinate stays within the boundaries of the space.
+        Any coordinate smaller than 0 or larger than 1 will be normalized to
+        respectively 0 or 1.
+
+        Args:
+            x (float): The coordinate to be normalized.
+
+        Returns:
+            float: The normalized value of the coordinate.
+        """
+        if x < 0.0:
+            return 0.0 
+        elif x > 1.0:
+            return 1.0
+        else:
+            return x
+
+    def normalize_beliefs(self):
+        """Normalize the belief within the given space.
+        """
+        for i in range(len(self.beliefs)):
+            self.beliefs[i] = self.normalisation(self.beliefs[i])
 
     def assimilation(self, other):
         """ """
@@ -31,22 +96,6 @@ class Wappie(Agent):
         self.beliefs += self.model.mu * (neighbor_beliefs_copy - beliefs_copy)
         if self.model.both_affected:
             other.beliefs += self.model.mu * (beliefs_copy - neighbor_beliefs_copy)
-
-    def normalisation(self, x):
-        """"""
-        if x < 0.0:
-            return 0.0  # should be float, otherwise numpy will scream at you...
-        elif x > 1.0:
-            return 1.0
-        else:
-            return x
-
-    def normalize_beliefs(self):
-        for i in range(len(self.beliefs)):
-            if self.beliefs[i] < 0.0:
-                self.beliefs[i] = 0.0
-            elif self.beliefs[i] > 1.0:
-                self.beliefs[i] = 1.0
 
     def contrast(self, other):
         # make a copy of beliefs
@@ -96,22 +145,34 @@ class Wappie(Agent):
         neighbors_network = [self.model.agents[i] for i in connected_nodes]
 
         # choose neighbors
-        if np.random.random() < self.model.p_grid:
+        if self.model.p_grid == None:
+            # print(neighbors_grid + neighbors_network)
+            interacting_neighbor = self.random.choice(neighbors_grid + neighbors_network)
+            if interacting_neighbor in neighbors_grid:
+                self.set_influence_tracker("grid")
+            else:
+                self.set_influence_tracker("network")
+        elif np.random.random() < self.model.p_grid:
             if not neighbors_grid:
                 return
             interacting_neighbor = self.random.choice(neighbors_grid)
+            self.set_influence_tracker("grid")
         else:
             if not neighbors_network:
                 return
+            self.set_influence_tracker("network")
             interacting_neighbor = self.random.choice(neighbors_network)
 
         if self.distance(interacting_neighbor) < self.model.d1:
             self.assimilation(interacting_neighbor)
+            self.influence_tracker += 1
         elif self.distance(interacting_neighbor) > self.model.d2:
             self.contrast(interacting_neighbor)
+            self.influence_tracker += 1
     
     def satisfied(self):
-        """Arcón, Victoria, Juan Pablo Pinasco, and Inés Caridi.
+        """
+        Source: Arcón, Victoria, Juan Pablo Pinasco, and Inés Caridi.
         "A Schelling-Opinion Model Based on Integration of Opinion Formation
         with Residential Segregation." Causes and Symptoms of Socio-Cultural
         Polarization: Role of Information and Communication Technologies.

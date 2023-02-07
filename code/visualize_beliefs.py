@@ -26,7 +26,7 @@ def get_beliefs(model: Political_spectrum):
         y.append(belief_y)
     return x, y
 
-def plot_beliefs(model: Political_spectrum, run_id: int):
+def plot_beliefs(model: Political_spectrum, run_id):
     """Plots the current state of beliefs of the agent in the model.
 
     Args:
@@ -38,10 +38,13 @@ def plot_beliefs(model: Political_spectrum, run_id: int):
     plt.xlim((0.0, 1.0))
     plt.ylim((0.0, 1.0))
     plt.plot(x, y, ".")
+    plt.plot([0.5, 0.5], [0.0, 1.0], "k", alpha=0.5, label="_not in legend")
+    plt.plot([0.0, 1.0], [0.5, 0.5], "k", alpha=0.5, label="_not in legend")
+    plt.title("Distribution of agents' beliefs")
     num_steps = model.num_steps
 
     output_path = get_output_path()
-    plt.savefig(f"{output_path}images{run_id}_scatterplot_step{num_steps}.png")
+    plt.savefig(f"{output_path}/images/{run_id}_scatterplot_step{num_steps}.png")
 
 def animate_beliefs(model: Political_spectrum, run_id: int):
     assert model.num_steps == 0
@@ -73,25 +76,32 @@ def animate_beliefs(model: Political_spectrum, run_id: int):
                                     metadata=dict(artist='Me'),
                                     bitrate=1800)
     path = get_output_path()
-    ani.save(f'{path}images{run_id}_scatter.gif', writer=writer)
+    ani.save(f'{path}/images/{run_id}_scatter.gif', writer=writer)
 
+def gradient_beliefs(model: Political_spectrum):
+    x, y = get_beliefs(model)
+    print(x)
+    print(y)
+    print()
+
+    Z = np.random.rand(3, 5)
+    print()
+    print(Z)
+    plt.figure()
+    plt.pcolor(Z)
+    plt.show()
+    
 
 if __name__ == "__main__":
-    width=2
-    height=2
-    lambd=0.05
-    mu=0.20
-    d1=0.35
-    d2=1.5
-    mu_norm=0.5
-    sigma_norm=0.2
-    network_type="BA"
-    grid_preference=0.5
-    grid_radius=2
-    grid_density=0.95
-    both_affected=True
-
-    model = Political_spectrum()
+    model = Political_spectrum(width=20,
+                                lambd=0.05,
+                                mu=0.20,
+                                d1=0.35,
+                                d2=1.5,
+                                mu_norm=0.5,
+                                sigma_norm=0.2,
+                                network_type="BA",
+                                grid_preference=0.5)
     run_id = datetime.datetime.now()
     plot_beliefs(model, run_id)
 
@@ -100,9 +110,9 @@ if __name__ == "__main__":
     #         model.step()
     #     plot_beliefs(model, run_id)
 
-    animate_beliefs(model, run_id)
+    # animate_beliefs(model, run_id)
 
-
+    # gradient_beliefs(model)
 
 
 

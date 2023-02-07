@@ -63,6 +63,7 @@ def create_samples(problem, num_samples, second_order: bool, save_data: bool = F
         for name, val in zip(problem["names"], param_values[run]):
             variables[name] = val
 
+        variables["width"] = int(variables["width"])
         # make sure the network is chosen as index
         variables["network_type"] = int(variables["network_type"])
 
@@ -143,7 +144,7 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
 
     return data
 
-def plot_index(s, params, i, title=''):
+def plot_index(s, params, i, title=''):    
     """
     Creates a plot for Sobol sensitivity analysis that shows the contributions
     of each parameter to the global sensitivity.
@@ -151,7 +152,7 @@ def plot_index(s, params, i, title=''):
     Args:
         s (dict): dictionary {'S#': dict, 'S#_conf': dict} of dicts that hold
             the values for a set of parameters
-        params (list): the parameters taken from s
+        params  (list): the parameters taken from s
         i (str): string that indicates what order the sensitivity is.
         title (str): title for the plot
     """
@@ -194,7 +195,7 @@ def sobol_analyze_data(problem, from_file: bool=True, save_as: str=None, data=No
         print(data.size)
 
     Si_polarization = sobol_analyze.analyze(problem, data["polarization"].values, calc_second_order=second_order, print_to_console=True)
-    Si_network_influence = sobol_analyze.analyze(problem, pd.concat(dfs[0:7])["network_influence"].values, calc_second_order=second_order, print_to_console=True)
+    # Si_network_influence = sobol_analyze.analyze(problem, pd.concat(dfs[0:7])["network_influence"].values, calc_second_order=second_order, print_to_console=True)
 
     path = get_output_path()
 
@@ -214,36 +215,37 @@ def sobol_analyze_data(problem, from_file: bool=True, save_as: str=None, data=No
     plt.savefig(f"{path}/images/{save_as}_polarization_T.png")
     plt.show()
 
+    # network_names = problem['names'].copy()
+    # network_names.remove("network_type")
+    # network_names.remove("mu")
+    # print(network_names)
+    # copy_Si = Si_network_influence.copy()
+    # for key in copy_Si:
+    #     value = copy_Si[key]
+    #     print(value)
+    #     value = np.concatenate([value[:1], value[2:4], value[5:]])
+    #     copy_Si[key] = value
+    #     print(value)
 
-    network_names = problem['names'].copy()
-    network_names.remove("network_type")
-    network_names.remove("mu")
-    print(network_names)
-    copy_Si = Si_network_influence.copy()
-    for key in copy_Si:
-        value = copy_Si[key]
-        print(value)
-        value = np.concatenate([value[:1], value[2:4], value[5:]])
-        copy_Si[key] = value
-        print(value)
-    # first order
-    plot_index(copy_Si, network_names, '1', 'First order sensitivity')
-    plt.savefig(f"{path}/images/{save_as}_networkinfluence_1.png")
-    plt.show()
+    # # first order
+    # plot_index(copy_Si, network_names, '1', 'First order sensitivity')
+    # plt.savefig(f"{path}/images/{save_as}_networkinfluence_1.png")
+    # plt.show()
 
-    if second_order:
-        plot_index(copy_Si, network_names, '2', 'Second order sensitivity')
-        plt.savefig(f"{path}/images/{save_as}_networkinfluence_2.png")
-        plt.show()
+    # # second order
+    # if second_order:
+    #     plot_index(copy_Si, network_names, '2', 'Second order sensitivity')
+    #     plt.savefig(f"{path}/images/{save_as}_networkinfluence_2.png")
+    #     plt.show()
 
-    # total order
-    plot_index(copy_Si, network_names, 'T', 'Total order sensitivity')
-    plt.savefig(f"{path}/images/{save_as}_networkinfluence_T.png")
-    plt.show()
+    # # total order
+    # plot_index(copy_Si, network_names, 'T', 'Total order sensitivity')
+    # plt.savefig(f"{path}/images/{save_as}_networkinfluence_T.png")
+    # plt.show()
 
 if __name__ == "__main__":
 
-    save_as = "new_sa"
+    save_as = "sensitivity_analysis_final"
 
     # problem = {
     # "num_vars": 8,
@@ -279,7 +281,7 @@ if __name__ == "__main__":
                 "grid_radius",
                 "grid_density",
                 "both_affected"],
-    "bounds": [[5, 33],
+    "bounds": [[5, 21],
                 [0, 0.5],
                 [0, 0.5],
                 [0, np.sqrt(2)/2],
@@ -292,23 +294,23 @@ if __name__ == "__main__":
                 [0.5, 1],
                 [0, 1]]}
 
-    second_order = False
+    second_order = True
 
-    samples = create_samples(problem=problem,
-                            num_samples=64,
-                            second_order=second_order,
-                            save_data=True,
-                            save_as=save_as)
+    # samples = create_samples(problem=problem,
+    #                         num_samples=64,
+    #                         second_order=second_order,
+    #                         save_data=True,
+    #                         save_as=save_as)
 
-    # data = sobol_run_samples(problem=problem,
-    #                         repeats=8,
-    #                         max_steps=100,
-    #                         data_collection_period=-1,
-    #                         from_data=True,
-    #                         save_as=save_as,
-    #                         samples=None,
-    #                         number_processes=None,
-    #                         save_data=True)
+    data = sobol_run_samples(problem=problem,
+                            repeats=8,
+                            max_steps=100,
+                            data_collection_period=-1,
+                            from_data=True,
+                            save_as=save_as,
+                            samples=None,
+                            number_processes=None,
+                            save_data=True)
 
     # sobol_analyze_data(problem=problem,
     #                 from_file=True,
