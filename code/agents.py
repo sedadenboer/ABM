@@ -51,7 +51,6 @@ class Wappie(Agent):
         self.influenced_by_network = value
 
     def distance(self, other):
-        """ """
         # print(self.beliefs, other.beliefs)
         return distance.euclidean(list(self.beliefs), list(other.beliefs))
 
@@ -177,7 +176,6 @@ class Wappie(Agent):
             else:
                 satisfaction -= 1
         
-        if 
         return satisfaction / len(neighbors_grid) > self.model.threshold
 
     def move(self):
