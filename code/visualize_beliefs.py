@@ -41,7 +41,7 @@ def plot_beliefs(model: Political_spectrum, run_id: int):
     num_steps = model.num_steps
 
     output_path = get_output_path()
-    plt.savefig(f"{output_path}/images/{run_id}_scatterplot_step{num_steps}.png")
+    plt.savefig(f"{output_path}images{run_id}_scatterplot_step{num_steps}.png")
 
 def animate_beliefs(model: Political_spectrum, run_id: int):
     assert model.num_steps == 0
@@ -73,21 +73,8 @@ def animate_beliefs(model: Political_spectrum, run_id: int):
                                     metadata=dict(artist='Me'),
                                     bitrate=1800)
     path = get_output_path()
-    ani.save(f'{path}/images/{run_id}_scatter.gif', writer=writer)
+    ani.save(f'{path}images{run_id}_scatter.gif', writer=writer)
 
-def gradient_beliefs(model: Political_spectrum):
-    x, y = get_beliefs(model)
-    print(x)
-    print(y)
-    print()
-
-    Z = np.random.rand(3, 5)
-    print()
-    print(Z)
-    plt.figure()
-    plt.pcolor(Z)
-    plt.show()
-    
 
 if __name__ == "__main__":
     width=2
@@ -100,19 +87,22 @@ if __name__ == "__main__":
     sigma_norm=0.2
     network_type="BA"
     grid_preference=0.5
+    grid_radius=2
+    grid_density=0.95
+    both_affected=True
 
-    model = Political_spectrum(width, lambd, mu, d1, d2, mu_norm, sigma_norm, network_type, grid_preference)
+    model = Political_spectrum()
     run_id = datetime.datetime.now()
-    # plot_beliefs(model, run_id)
+    plot_beliefs(model, run_id)
 
     # for _ in range(5):
     #     for _ in range(100):
     #         model.step()
     #     plot_beliefs(model, run_id)
 
-    # animate_beliefs(model, run_id)
+    animate_beliefs(model, run_id)
 
-    gradient_beliefs(model)
+
 
 
 

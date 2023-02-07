@@ -13,7 +13,7 @@ class Political_spectrum(Model):
 
     def __init__(
         self,
-        width: int = 20,
+        width: int = 50,
         lambd: float = 0.5,
         mu: float = 0.20,
         d1: float = 0.7,
@@ -121,7 +121,7 @@ class Political_spectrum(Model):
             _type_: _description_
         """
         # only measure every 100 steps
-        if self.num_steps % 50 != 0:
+        if self.num_steps % 100 != 0:
             return
         
         polarization = []
@@ -184,5 +184,5 @@ if __name__ == "__main__":
         both_affected=True
     )
 
-    for _ in range(100):
+    for _ in range(50):
         model.step()
