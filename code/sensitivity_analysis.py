@@ -296,21 +296,21 @@ if __name__ == "__main__":
 
     second_order = True
 
-    samples = create_samples(problem=problem,
-                            num_samples=64,
-                            second_order=second_order,
-                            save_data=True,
-                            save_as=save_as)
+    # samples = create_samples(problem=problem,
+    #                         num_samples=64,
+    #                         second_order=second_order,
+    #                         save_data=True,
+    #                         save_as=save_as)
 
-    # data = sobol_run_samples(problem=problem,
-    #                         repeats=8,
-    #                         max_steps=100,
-    #                         data_collection_period=-1,
-    #                         from_data=True,
-    #                         save_as=save_as,
-    #                         samples=None,
-    #                         number_processes=None,
-    #                         save_data=True)
+    data = sobol_run_samples(problem=problem,
+                            repeats=8,
+                            max_steps=100,
+                            data_collection_period=-1,
+                            from_data=True,
+                            save_as=save_as,
+                            samples=None,
+                            number_processes=None,
+                            save_data=True)
 
     # sobol_analyze_data(problem=problem,
     #                 from_file=True,
