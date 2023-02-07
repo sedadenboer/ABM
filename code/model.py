@@ -23,7 +23,7 @@ class Political_spectrum(Model):
         mu_norm: float = 0.5,
         sigma_norm: float = 0.2,
         network_type: str = "BA",
-        grid_preference: float = 0.5,
+        grid_preference: float = None,
         grid_radius: int = 2,
         grid_density: float = 1,
         both_affected: bool = True
@@ -152,8 +152,9 @@ class Political_spectrum(Model):
             local_polarization_network = agent.distance_in_network()
             network_influences.append(local_polarization_network)
 
-            influenced = (1/local_polarization_network) / (1/local_polarization_network+1/local_polarization_grid)
-            influences.append(influenced)
+            if local_polarization_network > 0 and local_polarization_grid > 0:
+                influenced = (1/local_polarization_network) / (1/local_polarization_network+1/local_polarization_grid)
+                influences.append(influenced)
 
             num_grid_infl = agent.influenced_by_grid
             tot_grid_infl += agent.influenced_by_grid
@@ -177,7 +178,7 @@ class Political_spectrum(Model):
         #     else:
         #         influenced = agent.distance_in_grid() / agent.distance_in_network()
         #     influences.append(influenced)
-        # return sum(influences) / self.num_agents
+        # # return sum(influences) / self.num_agents
 
 
     def step(self):
@@ -204,7 +205,7 @@ if __name__ == "__main__":
         mu_norm=mu,
         sigma_norm=sigma,
         network_type="complete",
-        grid_preference=0.5,
+        # grid_preference=0.5,
         grid_radius=2,
         both_affected=True,
         grid_density=0.95

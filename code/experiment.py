@@ -340,23 +340,23 @@ if __name__ == "__main__":
     # comparison_grid_network(max_steps, repeats, width, lambd, mu, d1, d2,
     #                         network_type, grid_radius, both_affected)
 
-    # # COMPARE DIFFERENT NETWORK TYPES
-    # network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
-    #                    grid_preference, grid_radius, both_affected)
-    #
+    # COMPARE DIFFERENT NETWORK TYPES
+    network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
+                       grid_preference, grid_radius, both_affected)
+    
     # # GRID PREFERENCE VS POLARIZATION FOR ALL NETWORK TYPES
     # grid_preference_vs_polarization(max_steps, width, lambd, mu, d1, d2, grid_radius, both_affected)
 
     # VARYING D1 AND D2 FOR DIFFERENT MU AND LAMBDA COMBINATIONS
-    compare_d1_d2(max_steps, repeats, width, lambd, mu,
-                  network_type, grid_preference, grid_radius, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.05, 0.05,
-                  network_type, grid_preference, grid_radius, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.4, 0.4,
-                  network_type, grid_preference, grid_radius, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.05, 0.4,
-                  network_type, grid_preference, grid_radius, both_affected)
-    compare_d1_d2(max_steps, repeats, width, 0.4, 0.05,
-                  network_type, grid_preference, grid_radius, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, lambd, mu,
+    #               network_type, grid_preference, grid_radius, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.05, 0.05,
+    #               network_type, grid_preference, grid_radius, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.4, 0.4,
+    #               network_type, grid_preference, grid_radius, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.05, 0.4,
+    #               network_type, grid_preference, grid_radius, both_affected)
+    # compare_d1_d2(max_steps, repeats, width, 0.4, 0.05,
+    #               network_type, grid_preference, grid_radius, both_affected)
 
-    plt.show()
+    # plt.show()

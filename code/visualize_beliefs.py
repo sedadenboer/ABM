@@ -26,7 +26,7 @@ def get_beliefs(model: Political_spectrum):
         y.append(belief_y)
     return x, y
 
-def plot_beliefs(model: Political_spectrum, run_id: int):
+def plot_beliefs(model: Political_spectrum, run_id):
     """Plots the current state of beliefs of the agent in the model.
 
     Args:
@@ -38,6 +38,9 @@ def plot_beliefs(model: Political_spectrum, run_id: int):
     plt.xlim((0.0, 1.0))
     plt.ylim((0.0, 1.0))
     plt.plot(x, y, ".")
+    plt.plot([0.5, 0.5], [0.0, 1.0], "k", alpha=0.5, label="_not in legend")
+    plt.plot([0.0, 1.0], [0.5, 0.5], "k", alpha=0.5, label="_not in legend")
+    plt.title("Distribution of agents' beliefs")
     num_steps = model.num_steps
 
     output_path = get_output_path()
@@ -90,20 +93,17 @@ def gradient_beliefs(model: Political_spectrum):
     
 
 if __name__ == "__main__":
-    width=2
-    height=2
-    lambd=0.05
-    mu=0.20
-    d1=0.35
-    d2=1.5
-    mu_norm=0.5
-    sigma_norm=0.2
-    network_type="BA"
-    grid_preference=0.5
-
-    model = Political_spectrum(width, lambd, mu, d1, d2, mu_norm, sigma_norm, network_type, grid_preference)
+    model = Political_spectrum(width=20,
+                                lambd=0.05,
+                                mu=0.20,
+                                d1=0.35,
+                                d2=1.5,
+                                mu_norm=0.5,
+                                sigma_norm=0.2,
+                                network_type="BA",
+                                grid_preference=0.5)
     run_id = datetime.datetime.now()
-    # plot_beliefs(model, run_id)
+    plot_beliefs(model, run_id)
 
     # for _ in range(5):
     #     for _ in range(100):
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     # animate_beliefs(model, run_id)
 
-    gradient_beliefs(model)
+    # gradient_beliefs(model)
 
 
 

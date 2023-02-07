@@ -6,7 +6,23 @@ import copy
 
 
 class Wappie(Agent):
-    def __init__(self, unique_id: int, model: Model, grid_pos, prior_beliefs) -> None:
+    def __init__(self, 
+                 unique_id: int,
+                 model: Model,
+                 grid_pos,
+                 prior_beliefs) -> None:
+        """The agents of the Policital_Spectrum model.
+        Has a position in both the grid and the network of the model.
+        Changes belief based on its connections on the grid and in the network.
+
+        Args:
+            unique_id (int): The id of the agent.
+            model (Model): The model this agent belongs to.
+            grid_pos (tuple[int]): The position of this agent in the grid.
+            prior_beliefs (tuple[float]): The initial belief of this agent.
+                Consist of two floats corresponding to the x and y position in
+                the belief space.
+        """
         super().__init__(unique_id, model)
 
         self.beliefs = prior_beliefs
@@ -17,7 +33,6 @@ class Wappie(Agent):
         self.influenced_by_grid = 0
         self.influenced_by_network = 0
         self._tracker = "grid"
-        # print(self.pos)
 
     def set_influence_tracker(self, to_change: str):
         assert to_change == "grid" or to_change == "network"
@@ -115,7 +130,14 @@ class Wappie(Agent):
         neighbors_network = [self.model.agents[i] for i in connected_nodes]
 
         # choose neighbors
-        if np.random.random() < self.model.p_grid:
+        if self.model.p_grid == None:
+            # print(neighbors_grid + neighbors_network)
+            interacting_neighbor = self.random.choice(neighbors_grid + neighbors_network)
+            if interacting_neighbor in neighbors_grid:
+                self.set_influence_tracker("grid")
+            else:
+                self.set_influence_tracker("network")
+        elif np.random.random() < self.model.p_grid:
             if not neighbors_grid:
                 return
             interacting_neighbor = self.random.choice(neighbors_grid)
@@ -155,6 +177,7 @@ class Wappie(Agent):
             else:
                 satisfaction -= 1
         
+        if 
         return satisfaction / len(neighbors_grid) > self.model.threshold
 
     def move(self):

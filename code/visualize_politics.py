@@ -1,5 +1,4 @@
-from mesa.visualization.ModularVisualization import ModularServer
-from mesa.visualization.modules import NetworkModule, CanvasGrid
+import mesa
 
 from model import Political_spectrum
 
@@ -46,32 +45,33 @@ def network_portrayal(G):
     # print(portrayal)
     return portrayal
 
-network = NetworkModule(network_portrayal)
+network = mesa.visualization.NetworkModule(network_portrayal)
 
-def agent_portrayal(agent):
+def grid_portrayal(agent):
     portrayal = {
-        "Shape": "rect",
+        "Shape": "circle",
         "Color": color(agent),
         "Filled": "true",
         "Layer" : 0,
-        "w": 0.9,
-        "h": 0.9
+        # "w": 0.9,
+        # "h": 0.9
+        "r": 0.5
     }
     return portrayal
 
 width = 10
 
-grid = CanvasGrid(agent_portrayal, width, width, 500, 500)
+grid = mesa.visualization.CanvasGrid(grid_portrayal, width, width)
 
 lambd=0.5
 mu=0.20
 d1=0.7
 d2=1.0
 
-server = ModularServer(
+server = mesa.visualization.ModularServer(
     Political_spectrum,
-    [network, grid],
-    # [grid],
+    # [network, grid],
+    [network],
     "Politics Model", 
     {
         "width": width,
@@ -79,11 +79,10 @@ server = ModularServer(
         "mu": mu,
         "d1": d1,
         "d2": d2,
-        "network_type": "idealised",
-        "grid_preference": 0.5,
+        "network_type": 3,
         "grid_density": 0.95
     }
 )
 
-server.port = 8521  # The default
+# server.port = 8521  # The default
 server.launch()
