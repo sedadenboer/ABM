@@ -76,9 +76,7 @@ class Political_spectrum(Model):
         self.both_affected = both_affected
 
         # set the datacollector
-        model_reporters = {"polarization": lambda m: m.polarization(),
-                        "network_influence": lambda m: m.influenced_by_network()}
-                        # "step": lambda m: m.num_steps}
+        model_reporters = {"polarization": lambda m: m.polarization()}
         self.datacollector = DataCollector(model_reporters=model_reporters)
 
         # turn the model on
@@ -121,7 +119,7 @@ class Political_spectrum(Model):
             _type_: _description_
         """
         # only measure every 100 steps
-        if self.num_steps % 50 != 0:
+        if self.num_steps % 100 != 0:
             return
         
         polarization = []
@@ -138,54 +136,6 @@ class Political_spectrum(Model):
             raise ZeroDivisionError
 
         return sum(polarization) / len(polarization)
-        # return sum(polarization)
-
-    def influenced_by_network(self):
-        return
-        if self.num_steps % 50 != 0:
-            return
-            
-        grid_influences = []
-        network_influences = []
-        influences = []
-        netw_infl = []
-        tot_grid_infl = 0
-        tot_netw_infl = 0
-        for agent_id in self.agents:
-            agent = self.agents[agent_id]
-            local_polarization_grid = agent.distance_in_grid()
-            grid_influences.append(local_polarization_grid)
-            local_polarization_network = agent.distance_in_network()
-            network_influences.append(local_polarization_network)
-
-            if local_polarization_network > 0 and local_polarization_grid > 0:
-                influenced = (1/local_polarization_network) / (1/local_polarization_network+1/local_polarization_grid)
-                influences.append(influenced)
-
-            num_grid_infl = agent.influenced_by_grid
-            tot_grid_infl += agent.influenced_by_grid
-            num_netw_infl = agent.influenced_by_network
-            tot_netw_infl += agent.influenced_by_network
-            if num_grid_infl + num_netw_infl > 0:
-                netw_infl.append(num_netw_infl/(num_netw_infl+num_grid_infl))
-            else:
-                netw_infl.append(0)
-
-        # print(f"Network: {sum(network_influences)/self.num_agents}", end="\t")
-        # print(f"Grid: {sum(grid_influences)/self.num_agents}", end="\t")
-        # network = sum(network_influences)/self.num_agents
-        # grid = sum(grid_influences)/self.num_agents
-        # print(sum(influences)/self.num_agents, network/(network+grid))
-        # print(sum(netw_infl)/self.num_agents)
-        # if tot_grid_infl+tot_netw_infl > 0:
-        #     print(tot_netw_infl/(tot_netw_infl+tot_grid_infl))
-        #     if agent.distance_in_network() == 0:
-        #         influenced = 0
-        #     else:
-        #         influenced = agent.distance_in_grid() / agent.distance_in_network()
-        #     influences.append(influenced)
-        # # return sum(influences) / self.num_agents
-
 
     def step(self):
         self.schedule.step()
@@ -193,10 +143,6 @@ class Political_spectrum(Model):
         self.datacollector.collect(self)
 
 if __name__ == "__main__":
-    # model = Political_spectrum(10, 10, "scale_free")
-    # nx.draw_kamada_kawai(model.G, node_size=50)
-    # plt.savefig("../kamada_kawai.png")
-
     # set parameters for Gaussian distribution
     mu = 0.5
     sigma = np.sqrt(0.2)
@@ -211,7 +157,6 @@ if __name__ == "__main__":
         mu_norm=mu,
         sigma_norm=sigma,
         network_type="complete",
-        # grid_preference=0.5,
         grid_radius=2,
         both_affected=True,
         grid_density=0.95

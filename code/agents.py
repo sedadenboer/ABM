@@ -9,8 +9,8 @@ class Wappie(Agent):
     def __init__(self, 
                  unique_id: int,
                  model: Model,
-                 grid_pos,
-                 prior_beliefs) -> None:
+                 grid_pos: tuple,
+                 prior_beliefs: tuple) -> None:
         """The agents of the Policital_Spectrum model.
         Has a position in both the grid and the network of the model.
         Changes belief based on its connections on the grid and in the network.
@@ -51,8 +51,40 @@ class Wappie(Agent):
         self.influenced_by_network = value
 
     def distance(self, other):
-        # print(self.beliefs, other.beliefs)
+        """Determine the distance in belief between this agent and another.
+        Uses eudclidean distance
+
+        Args:
+            other (Wappie): The agent to determine the distance to.
+
+        Returns:
+            float: The distance between the two agents.
+        """
         return distance.euclidean(list(self.beliefs), list(other.beliefs))
+
+    def normalisation(self, x):
+        """Makes sure the coordinate stays within the boundaries of the space.
+        Any coordinate smaller than 0 or larger than 1 will be normalized to
+        respectively 0 or 1.
+
+        Args:
+            x (float): The coordinate to be normalized.
+
+        Returns:
+            float: The normalized value of the coordinate.
+        """
+        if x < 0.0:
+            return 0.0 
+        elif x > 1.0:
+            return 1.0
+        else:
+            return x
+
+    def normalize_beliefs(self):
+        """Normalize the belief within the given space.
+        """
+        for i in range(len(self.beliefs)):
+            self.beliefs[i] = self.normalisation(self.beliefs[i])
 
     def assimilation(self, other):
         """ """
@@ -64,22 +96,6 @@ class Wappie(Agent):
         self.beliefs += self.model.mu * (neighbor_beliefs_copy - beliefs_copy)
         if self.model.both_affected:
             other.beliefs += self.model.mu * (beliefs_copy - neighbor_beliefs_copy)
-
-    def normalisation(self, x):
-        """"""
-        if x < 0.0:
-            return 0.0  # should be float, otherwise numpy will scream at you...
-        elif x > 1.0:
-            return 1.0
-        else:
-            return x
-
-    def normalize_beliefs(self):
-        for i in range(len(self.beliefs)):
-            if self.beliefs[i] < 0.0:
-                self.beliefs[i] = 0.0
-            elif self.beliefs[i] > 1.0:
-                self.beliefs[i] = 1.0
 
     def contrast(self, other):
         # make a copy of beliefs
@@ -155,7 +171,8 @@ class Wappie(Agent):
             self.influence_tracker += 1
     
     def satisfied(self):
-        """Arcón, Victoria, Juan Pablo Pinasco, and Inés Caridi.
+        """
+        Source: Arcón, Victoria, Juan Pablo Pinasco, and Inés Caridi.
         "A Schelling-Opinion Model Based on Integration of Opinion Formation
         with Residential Segregation." Causes and Symptoms of Socio-Cultural
         Polarization: Role of Information and Communication Technologies.
