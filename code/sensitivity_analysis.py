@@ -16,6 +16,8 @@ from model import Political_spectrum
 
 from visualize_beliefs import get_output_path
 
+import time
+
 # OFAT
 def ofat_sensitivity_analysis(from_data: bool, save_data=True):
 
@@ -115,12 +117,12 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
     if number_processes > 1:
         pool = mp.Pool(number_processes)
 
-        for rep in range(repeats):
+        for rep in repeats:
             # create a dataframe to save the data
             data = pd.DataFrame(index=range(len(samples)),
                                 columns=problem["names"])
             data["polarization"] = None
-            data["network_influence"] = None
+            
             run = 0 # keep track of the runs for the dataframe
 
             process = pool.map_async(run_batch_model, parameters)
@@ -137,6 +139,7 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
                 data.to_csv(f"{path}/run_data/{save_as}_{user}_{rep}.csv", index=False)
 
             print(data)
+
         pool.close()
 
     else:
