@@ -121,7 +121,7 @@ class Political_spectrum(Model):
             _type_: _description_
         """
         # only measure every 100 steps
-        if self.num_steps % 100 != 0:
+        if self.num_steps % 50 != 0:
             return
         
         polarization = []
@@ -132,11 +132,17 @@ class Political_spectrum(Model):
                 # find the distance between the agents
                 dist = agent1.distance(agent2)
                 polarization.append(dist)
+
+        if len(polarization) == 0:
+            print(self.agents, self.num_agents) 
+            raise ZeroDivisionError
+
         return sum(polarization) / len(polarization)
         # return sum(polarization)
 
     def influenced_by_network(self):
-        if self.num_steps % 10 != 0:
+        return
+        if self.num_steps % 50 != 0:
             return
             
         grid_influences = []
