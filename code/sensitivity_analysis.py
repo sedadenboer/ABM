@@ -117,12 +117,12 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
     if number_processes > 1:
         pool = mp.Pool(number_processes)
 
-        for rep in repeats:
+        for rep in range(repeats):
             # create a dataframe to save the data
             data = pd.DataFrame(index=range(len(samples)),
                                 columns=problem["names"])
             data["polarization"] = None
-            
+
             run = 0 # keep track of the runs for the dataframe
 
             process = pool.map_async(run_batch_model, parameters)
