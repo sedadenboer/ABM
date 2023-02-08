@@ -13,7 +13,7 @@ class Political_spectrum(Model):
 
     def __init__(
         self,
-        width: int = 20,
+        width: int = 50,
         lambd: float = 0.5,
         mu: float = 0.20,
         d1: float = 0.7,
@@ -162,5 +162,5 @@ if __name__ == "__main__":
         grid_density=0.95
     )
 
-    for _ in range(100):
+    for _ in range(50):
         model.step()
