@@ -86,8 +86,12 @@ class Wappie(Agent):
         for i in range(len(self.beliefs)):
             self.beliefs[i] = self.normalisation(self.beliefs[i])
 
-    def assimilation(self, other):
-        """ """
+    def assimilation(self, other: "Wappie"):
+        """Move the beliefs of two agents towards each other.
+
+        Args:
+            other (Wappie): The agent to which the belief is moved.
+        """
         # make a copy of beliefs
         beliefs_copy = copy.copy(self.beliefs)
         neighbor_beliefs_copy = copy.copy(other.beliefs)
@@ -97,7 +101,12 @@ class Wappie(Agent):
         if self.model.both_affected:
             other.beliefs += self.model.mu * (beliefs_copy - neighbor_beliefs_copy)
 
-    def contrast(self, other):
+    def contrast(self, other: "Wappie"):
+        """Move two agents beliefs away from each other.
+
+        Args:
+            other (Wappie): The agent from which to move away.
+        """
         # make a copy of beliefs
         beliefs_copy = copy.copy(self.beliefs)
         neighbor_beliefs_copy = copy.copy(other.beliefs)
@@ -120,6 +129,11 @@ class Wappie(Agent):
             other.normalize_beliefs()
 
     def distance_in_grid(self):
+        """Gives the average distance in belief to all grid neighbours.
+
+        Returns:
+            float: The average distance.
+        """
         # calculate the average distance in beliefs and that of grid neighbours
         distances = []
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=self.model.grid_radius)
@@ -128,6 +142,11 @@ class Wappie(Agent):
         return sum(distances) / len(distances)
     
     def distance_in_network(self):
+        """Gives the average distance in belief to all network neighbours.
+
+        Returns:
+            float: The average distance.
+        """
         connected_nodes = self.model.network.get_neighbors(self.unique_id)
         if len(connected_nodes) == 0:
             return 0
@@ -138,6 +157,8 @@ class Wappie(Agent):
         return sum(distances) / len(distances)
     
     def interact(self):
+        """Interact with a neighbour in either the grid or the network.
+        """
         # get neighbors from grid and network
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=self.model.grid_radius)
         
@@ -172,6 +193,7 @@ class Wappie(Agent):
     
     def satisfied(self):
         """
+        Checks whether this agent is satisfied with the neighbouring agents in the grid.
         Source: Arcón, Victoria, Juan Pablo Pinasco, and Inés Caridi.
         "A Schelling-Opinion Model Based on Integration of Opinion Formation
         with Residential Segregation." Causes and Symptoms of Socio-Cultural
@@ -179,7 +201,7 @@ class Wappie(Agent):
         Singapore: Springer Singapore, 2022. 27-50.
 
         Returns:
-            _type_: _description_
+            bool: If the agent is satisfied with their neighbours or not.
         """
         # get grid neighbors
         neighbors_grid = self.model.grid.get_neighbors(self.grid_pos, moore=True, radius=1)
@@ -200,6 +222,8 @@ class Wappie(Agent):
         return satisfaction / len(neighbors_grid) > self.model.threshold
 
     def move(self):
+        """Move the agent to a random empty spot if there is one.
+        """
         # find the position that has the most neighbours like itself
         new_pos = self.model.grid.find_empty()
         if new_pos:
@@ -208,6 +232,8 @@ class Wappie(Agent):
             self.grid_pos = new_pos
 
     def step(self):
+        """Perform one time step for this agent.
+        """
         self.interact()
         if not self.satisfied():
             self.move()
