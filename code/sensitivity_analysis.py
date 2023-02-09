@@ -16,47 +16,22 @@ from model import Political_spectrum
 
 from visualize_beliefs import get_output_path
 
-import time
+def create_samples(problem: dict, num_samples: int, second_order: bool, save_data: bool = False, save_as: str = None):
+    """Creates samples for the sobol analysis using saltelli's sampling scheme.
 
-# OFAT
-def ofat_sensitivity_analysis(from_data: bool, save_data=True):
+    Args:
+        problem (dict): The problem description. Should look like:
+            dict{"num_vars": int, "names": list[str], "bounds": list[list]}
+            where "names" has all names of the variables and "bounds" contains
+            the bounds of these variables.
+        num_samples (int): The number of samples, should be a multiple of 2.
+        second_order (bool): Whether to include second order analysis.
+        save_data (bool, optional): Wheter to save the data. Defaults to False.
+        save_as (str, optional): What to save the data as. Defaults to None.
 
-    problem = {
-        "num_vars": 1,
-        "names": ["d1"],
-        "bounds": [[0.01, 1.0]]}
-    
-    repeats = 10
-    max_steps = 100
-    samples_between_bounds = 30
-    data_collection_period = -1 # collect data at the end
-
-    data = {}
-
-    for i, var in enumerate(problem["names"]):
-        # create the samples for this variable
-        samples = np.linspace(*problem["bounds"][i], num=samples_between_bounds) # these are floats
-
-        # for _ in range(repeats):
-        batch = batch_run(model_cls=Political_spectrum,
-                        parameters={var: samples},
-                        number_processes=None, # this makes it parallel
-                        data_collection_period=data_collection_period,
-                        iterations=repeats,
-                        max_steps=max_steps,
-                        display_progress=False)
-
-        # print(batch) # this is a list with dicts:
-        # start of runid 29
-        # {'RunId': 29, 'iteration': 0, 'Step': 100, 'd1': 1.0, 'polarization': None, 'step': 100, 'AgentID': 0, 'beliefs': array([0., 1.])}
-        # end of runid 29
-        # {'RunId': 29, 'iteration': 0, 'Step': 100, 'd1': 1.0, 'polarization': None, 'step': 100, 'AgentID': 99, 'beliefs': array([1., 0.])}
-        data = pd.DataFrame(batch)
-        print(data.head())
-
-    # all it needs is pretty plots!
-
-def create_samples(problem, num_samples, second_order: bool, save_data: bool = False, save_as: str = None):
+    Returns:
+        dict: The generated samples.
+    """
     param_values = np.array(sobol_sample.sample(problem, num_samples, calc_second_order=second_order))
     parameters = {}
     parameters_list = []
@@ -65,11 +40,11 @@ def create_samples(problem, num_samples, second_order: bool, save_data: bool = F
         for name, val in zip(problem["names"], param_values[run]):
             variables[name] = val
 
-        variables["width"] = int(variables["width"])
         # make sure the network is chosen as index
         variables["network_type"] = int(variables["network_type"])
 
         # convert the sample to the right type
+        variables["width"] = int(variables["width"])
         variables["grid_radius"] = int(variables["grid_radius"])
         variables["both_affected"] = int(variables["both_affected"] > 0.5)
 
@@ -85,6 +60,14 @@ def create_samples(problem, num_samples, second_order: bool, save_data: bool = F
 
 
 def run_batch_model(parameters):
+    """Runs the model once using mesa's batch_run.
+
+    Args:
+        parameters (list): The parameters used for this run.
+
+    Returns:
+        list[dict[str]]: The result of the batch run.
+    """
     max_steps, data_collection_period, variables = parameters
     batch = batch_run(model_cls=Political_spectrum,
                         parameters=variables, # will run each combination of parameters
@@ -96,7 +79,41 @@ def run_batch_model(parameters):
     return batch
 
 
-def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_data: bool, save_as: str=None, samples=None, number_processes = None, save_data: bool = False):
+def sobol_run_samples(problem: dict,
+                      repeats: int,
+                      max_steps: int,
+                      data_collection_period: int,
+                      from_data: bool,
+                      save_as: str=None,
+                      samples: dict=None,
+                      number_processes: int = None,
+                      save_data: bool = False) -> pd.DataFrame:
+    """Runs the provided samples and collects the data for sobol analysis.
+
+    Args:
+        problem (dict): The problem description. Should look like:
+            dict{"num_vars": int, "names": list[str], "bounds": list[list]}
+            where "names" has all names of the variables and "bounds" contains
+            the bounds of these variables.
+        repeats (int): The number of repeats run for each sample combination.
+        max_steps (int): The maximum number of steps of the model.
+        data_collection_period (int): When the data is collected.
+        from_data (bool): Whether to run samples that are saved as csv.
+        save_as (str, optional): What the samples are stored as and what to
+            save the final data as. Defaults to None.
+        samples (dict, optional): The samples. Defaults to None.
+        number_processes (int, optional): The number of processes for parallel
+            computing. Defaults to None.
+        save_data (bool, optional): Whether to save the data as a csv file.
+            Defaults to False.
+
+    Raises:
+        ValueError: If no samples are provided.
+        ValueError: If the number of processes is negative.
+
+    Returns:
+        pd.DataFrame: The final data after running.
+    """
 
     if from_data:
         # load the samples
@@ -114,7 +131,7 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
     if not number_processes:
         number_processes = mp.cpu_count()
 
-    if number_processes > 1:
+    if number_processes > 0:
         pool = mp.Pool(number_processes)
 
         for rep in range(repeats):
@@ -143,7 +160,7 @@ def sobol_run_samples(problem, repeats, max_steps, data_collection_period, from_
         pool.close()
 
     else:
-        raise NotImplementedError()
+        raise ValueError("The number of processes should be a positive value")
 
     return data
 
@@ -181,7 +198,22 @@ def plot_index(s, params, i, title=''):
     plt.axvline(0, c='k')
     plt.tight_layout()
 
-def sobol_analyze_data(problem, from_file: bool=True, save_as: str=None, data=None, second_order:bool=False):
+def sobol_analyze_data(problem: dict, from_file: bool=True, save_as: str=None, data: pd.DataFrame=None, second_order:bool=False):
+    """_summary_
+
+    Args:
+        problem (dict): The problem description. Should look like:
+            dict{"num_vars": int, "names": list[str], "bounds": list[list]}
+            where "names" has all names of the variables and "bounds" contains
+            the bounds of these variables.
+        from_file (bool, optional): Whether to take the data from a file.
+            Defaults to True.
+        save_as (str, optional): What to save the images as. Defaults to None.
+        data (pd.DataFrame, optional): The data used for analysis. Defaults to
+            None.
+        second_order (bool, optional): Whether the second order sensitivity is
+            analysed. Defaults to False.
+    """
     if from_file:
         dfs = []
         # find all runs and concatenate dataframes
@@ -203,72 +235,32 @@ def sobol_analyze_data(problem, from_file: bool=True, save_as: str=None, data=No
     path = get_output_path()
 
     # first order
+    plt.figure(dpi=300)
     plot_index(Si_polarization, problem['names'], '1', 'First order sensitivity')
     plt.savefig(f"{path}/images/{save_as}_polarization_1.png")
     plt.show()
 
     # second order
     if second_order:
+        plt.figure(dpi=300)
         plot_index(Si_polarization, problem['names'], '2', 'Second order sensitivity')
+        # plt.yscale()
+        # plt.tight_layout()
+        plt.tick_params(axis="y", labelsize=4)
+        plt.tight_layout()
         plt.savefig(f"{path}/images/{save_as}_polarization_2.png")
         plt.show()
 
     # total order
+    plt.figure(dpi=300)
     plot_index(Si_polarization, problem['names'], 'T', 'Total order sensitivity')
     plt.savefig(f"{path}/images/{save_as}_polarization_T.png")
     plt.show()
 
-    # network_names = problem['names'].copy()
-    # network_names.remove("network_type")
-    # network_names.remove("mu")
-    # print(network_names)
-    # copy_Si = Si_network_influence.copy()
-    # for key in copy_Si:
-    #     value = copy_Si[key]
-    #     print(value)
-    #     value = np.concatenate([value[:1], value[2:4], value[5:]])
-    #     copy_Si[key] = value
-    #     print(value)
-
-    # # first order
-    # plot_index(copy_Si, network_names, '1', 'First order sensitivity')
-    # plt.savefig(f"{path}/images/{save_as}_networkinfluence_1.png")
-    # plt.show()
-
-    # # second order
-    # if second_order:
-    #     plot_index(copy_Si, network_names, '2', 'Second order sensitivity')
-    #     plt.savefig(f"{path}/images/{save_as}_networkinfluence_2.png")
-    #     plt.show()
-
-    # # total order
-    # plot_index(copy_Si, network_names, 'T', 'Total order sensitivity')
-    # plt.savefig(f"{path}/images/{save_as}_networkinfluence_T.png")
-    # plt.show()
 
 if __name__ == "__main__":
 
     save_as = "sensitivity_analysis_final"
-
-    # problem = {
-    # "num_vars": 8,
-    # "names": ["lambd",
-    #             "mu",
-    #             "d1",
-    #             "d2",
-    #             "network_type",
-    #             "grid_preference",
-    #             "grid_radius",
-    #             "both_affected"],
-    # "bounds": [[0, 0.5],
-    #             [0, 0.5],
-    #             [0, np.sqrt(2)/2],
-    #             [np.sqrt(2)/2, np.sqrt(2)],
-    #             [0, len(Political_spectrum.network_types)],
-    #             [0, 1],
-    #             [1, 4],
-    #             [0,1]]
-    # }
 
     problem = {
     "num_vars": 12,
@@ -299,11 +291,11 @@ if __name__ == "__main__":
 
     second_order = True
 
-    # samples = create_samples(problem=problem,
-    #                         num_samples=64,
-    #                         second_order=second_order,
-    #                         save_data=True,
-    #                         save_as=save_as)
+    samples = create_samples(problem=problem,
+                            num_samples=64,
+                            second_order=second_order,
+                            save_data=True,
+                            save_as=save_as)
 
     data = sobol_run_samples(problem=problem,
                             repeats=8,
@@ -315,7 +307,7 @@ if __name__ == "__main__":
                             number_processes=None,
                             save_data=True)
 
-    # sobol_analyze_data(problem=problem,
-    #                 from_file=True,
-    #                 save_as=save_as,
-    #                 second_order=second_order)
+    sobol_analyze_data(problem=problem,
+                    from_file=True,
+                    save_as=save_as,
+                    second_order=second_order)

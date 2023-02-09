@@ -13,7 +13,7 @@ class Political_spectrum(Model):
 
     def __init__(
         self,
-        width: int = 50,
+        width: int = 20,
         lambd: float = 0.5,
         mu: float = 0.20,
         d1: float = 0.7,
@@ -25,15 +25,53 @@ class Political_spectrum(Model):
         network_type: str = "BA",
         grid_preference: float = None,
         grid_radius: int = 2,
-        grid_density: float = 1,
+        grid_density: float = 0.95,
         both_affected: bool = True
         ) -> None:
-        """A model for people changing opinion on their political beliefs.
+        """A model that simulates the change in belief based on local
+        interactions and interactions on social media.
 
         Args:
-            width (int): The width of the grid used.
-            height (int): The height of the grid used.
-            network_type (str): Can be BA, random, idealised or scale_free?
+            width (int, optional): The width of the grid. This together with
+                grid_density determines the amount of agents. Defaults to 20.
+            lambd (float, optional): Lambda, determines the distance in belief
+                moved when two agents move away from each other.
+                Defaults to 0.5.
+            mu (float, optional): Mu, determines the distance in belief moved
+                when two agents move towards each other. Defaults to 0.20.
+            d1 (float, optional): The distance within which two agents will
+                assimilate. Between 0 and the square root of two. Defaults to
+                0.7.
+            d2 (float, optional): The distance from which two agents will
+                contrast. Should be larger than d1, but up to the square root
+                of 2. Defaults to 1.0.
+            satisfaction_distance (float, optional): The distance in belief for
+                which agents are satisfied with their neighbours. Defaults to
+                0.5.
+            satisfaction_threshold (float, optional): The threshold in
+                satisfaction. If the satisfaction score is lower, agents will
+                be unhappy. Should be between -1 and 1. Defaults to 0.0.
+            mu_norm (float, optional): The mean of the initial belief
+                distribution. Defaults to 0.5.
+            sigma_norm (float, optional): The standard deviation of the initial
+                belief distribution. Defaults to 0.2.
+            network_type (int | str, optional): The network used to simulate
+                social media. Can be "BA", "idealised", "erdos-renyi" and
+                "complete". Defaults to "BA".
+            grid_preference (float, optional): When a float is provided, this
+                chance will be used to determine whether an agent will connect
+                with someone from the grid opposed to someone from the network.
+                Defaults to None.
+            grid_radius (int, optional): The radius for which agents in the
+                grid are considered neighbours. Defaults to 2.
+            grid_density (float, optional): The density of agents in the grid.
+             Defaults to 0.95.
+            both_affected (bool, optional): Whether both agents are affected by
+                each interaction. Defaults to True.
+
+        Raises:
+            ValueError: When a network type is provided, that is not in the
+                available network types.
         """
         height = width
         self.num_agents = round(grid_density * width * height)
@@ -84,7 +122,15 @@ class Political_spectrum(Model):
         self.num_steps = 0
         self.datacollector.collect(self)
 
-    def place_agent(self, unique_id, mu_norm, sigma_norm):
+    def place_agent(self, unique_id: int, mu_norm: float, sigma_norm: float):
+        """Creates an agent and places them on the grid and in the network.
+
+        Args:
+            unique_id (int): The unique id of the agent.
+            mu_norm (float): The mean for the initial belief of the agent.
+            sigma_norm (float): The standard deviation for the initial belief
+                of the agent.
+        """
         grid_pos = self.grid.find_empty()
 
         # create prior beliefs
@@ -97,14 +143,14 @@ class Political_spectrum(Model):
                         grid_pos=grid_pos,
                         prior_beliefs=prior_beliefs)
 
+        # place the agent in the grid and in the network
         self.grid.place_agent(agent, grid_pos)
-        # print(agent.pos)
-            
         self.network.place_agent(agent, unique_id)
-        # print(agent.pos)
 
+        # add the agent to the schedule
         self.schedule.add(agent)
 
+        # save the agent in the model as well
         self.agents[unique_id] = agent
 
     def polarization(self):
@@ -116,7 +162,7 @@ class Political_spectrum(Model):
         PMCID: PMC8549827.
 
         Returns:
-            _type_: _description_
+            float: The polarisation in the model.
         """
         # only measure every 100 steps
         if self.num_steps % 100 != 0:
@@ -138,6 +184,8 @@ class Political_spectrum(Model):
         return sum(polarization) / len(polarization)
 
     def step(self):
+        """Performs one time step of the model.
+        """
         self.schedule.step()
         self.num_steps += 1
         self.datacollector.collect(self)
