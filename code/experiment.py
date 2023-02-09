@@ -25,8 +25,10 @@ def get_polarization(max_steps, width, lambd, mu, d1, d2, network_type,
             "mu": mu,
             "d1": d1,
             "d2": d2,
+            "satisfaction_distance": 0.5,
+            "satisfaction_threshold": 0.0,
             "mu_norm": 0.5,
-            "sigma_norm": 0.45,
+            "sigma_norm": 0.2,
             "network_type": network_type,
             "grid_preference": grid_preference,
             "grid_radius": grid_radius,
@@ -123,7 +125,7 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
     # save data and cleanup the dataframe
     path = get_output_path()
     network_comparison_df.to_csv(
-        f"{path}/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}_dens={grid_density}_d1d2={d1,d2}.csv",
+        f"{path}/experiments/comparison_networks_rep={repeats}_gridpref={grid_preference}_d1d2={d1,d2}.csv",
         index=False
         )
     column = ['Barabási–Albert', 'Idealised', 'Erdős–Rényi', 'Complete']
@@ -139,7 +141,7 @@ def network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
     plt.xlabel('timestep')
     plt.ylabel('polarization')
     plt.legend(title='Network type')
-    plt.savefig(f"{path}/experiments/comparison_networks_rep={repeats}_width={width}_gridpref={grid_preference}_dens={grid_density}.png",
+    plt.savefig(f"{path}/experiments/comparison_networks_rep={repeats}_gridpref={grid_preference}.png",
                 dpi=400)
 
 
@@ -176,7 +178,7 @@ def grid_preference_vs_polarization(network_types, max_steps, width, lambd, mu, 
     # save data
     path = get_output_path()
     final_df.to_csv(
-        f"{path}/experiments/saved_data/networks_vs_grid={repeats}_width={width}_net={network_type}_dens={grid_density}.csv",
+        f"{path}/experiments/saved_data/grid_pref_vs_polarization_rep={repeats}_d1d2={d1,d2}.csv",
         index=False
         )
 
@@ -186,7 +188,7 @@ def grid_preference_vs_polarization(network_types, max_steps, width, lambd, mu, 
     sns.lineplot(data=final_df, x='grid preference', y='polarization', hue='network',
                  palette=['royalblue', 'coral', 'mediumaquamarine', 'plum'], errorbar=('ci', 95))
     plt.legend(title='Network type')
-    plt.savefig(f"{path}/experiments/grid_pref_vs_polarization_rep={repeats}_width={width}_dens={grid_density}_d1d2={d1,d2}.png",
+    plt.savefig(f"{path}/experiments/grid_pref_vs_polarization_rep={repeats}_d1d2={d1,d2}.png",
                 dpi=400)
 
 
@@ -225,7 +227,7 @@ def compare_d1_d2(max_steps, repeats, width, lambd, mu, network_type,
 
     # save data
     final_df.to_csv(
-        f"../output_files/experiments/saved_data/compare_d1_d2={repeats}_width={width}_mu={mu}_lambd={lambd}_dens={grid_density}.csv",
+        f"../output_files/experiments/saved_data/compare_d1_d2={repeats}_mu={mu}_lambd={lambd}.csv",
         index=False
         )
 
@@ -239,7 +241,7 @@ def compare_d1_d2(max_steps, repeats, width, lambd, mu, network_type,
     plt.gca().invert_yaxis()
     plt.yticks(rotation=0, ha='right')
     plt.tight_layout()
-    plt.savefig(f"../output_files/experiments/compare_pol_d1_d2={repeats}_width={width}_mu={mu}_lambd={lambd}_dens={grid_density}.png",
+    plt.savefig(f"../output_files/experiments/compare_pol_d1_d2={repeats}_mu={mu}_lambd={lambd}.png",
                 dpi=400)
 
     # plotting heatmap for variance
@@ -252,19 +254,19 @@ def compare_d1_d2(max_steps, repeats, width, lambd, mu, network_type,
     plt.gca().invert_yaxis()
     plt.yticks(rotation=0, ha='right')
     plt.tight_layout()
-    plt.savefig(f"../output_files/experiments/compare_var_d1_d2={repeats}_width={width}_mu={mu}_lambd={lambd}_dens={grid_density}.png",
+    plt.savefig(f"../output_files/experiments/compare_var_d1_d2={repeats}_mu={mu}_lambd={lambd}.png",
                 dpi=400)
 
 
 if __name__ == "__main__":
     # set default parameters
-    max_steps=10 # should be a multiple of 10!
-    repeats=10
+    max_steps=10 # MAKE SURE TO HAVE THE CORRECT MEASURING STEPS VALUE IN polarization() in model.py
+    repeats=20
     width=20
     lambd=0.05
     mu=0.20
-    d1=0.35
-    d2=0.5
+    d1=0.1
+    d2=0.2
     network_type="BA"
     grid_preference=0.5
     grid_radius=2
@@ -274,11 +276,12 @@ if __name__ == "__main__":
     stepsize=0.05
 
     # # COMPARE DIFFERENT NETWORK TYPES
+    # max_steps=200
     # network_comparison(max_steps, repeats, width, lambd, mu, d1, d2,
     #                    grid_preference, grid_radius, grid_density, both_affected)
-
-
-    # VARYING D1 AND D2 FOR DIFFERENT MU AND LAMBDA COMBINATIONS
+    #
+    #
+    # # VARYING D1 AND D2 FOR DIFFERENT MU AND LAMBDA COMBINATIONS
     # compare_d1_d2(max_steps, repeats, width, lambd, mu,
     #               network_type, grid_preference, grid_radius, grid_density, both_affected)
 
@@ -290,18 +293,17 @@ if __name__ == "__main__":
     # network_types=['BA']
     # max_steps=100
     # stepsize=0.2
-
+    #
     # # expected low polarization
     # d1=1
     # d2=1.4
     # grid_preference_vs_polarization(network_types, max_steps, width, lambd, mu, d1, d2,
     #                                 grid_radius, grid_density, both_affected, repeats, stepsize)
-    
+    #
     # # expected high polarization
     # d1=0.2
     # d2=0.4
     # grid_preference_vs_polarization(network_types, max_steps, width, lambd, mu, d1, d2,
     #                                 grid_radius, grid_density, both_affected, repeats, stepsize)
-
 
     plt.show()
