@@ -11,9 +11,9 @@ The model is contained in the `code/classes` folder. The code for the model can 
 - install the required libraries (with the correct versions) through the requirements.txt by running: `pip install -r requirements.txt` from the home directory.
 
 ## Running the model
-To run any of the files, move to the code folder. Any output will be generated in the output_files folder.
+To run any of the files, move to the code folder. Any output will be generated in the save_results folder.
 - To run the sensitivity analysis on the model, the file sensitivity_analysis.py should be run.
 - Any visualisations are contained in the visualisation folder.
     - Run visualize_politics.py for a visualization of the model.
     - Run visualize_beliefs.py for a visualization of the agents beliefs changing over time.
-
+- Experiments can be run with experiments.py. Note that all of them will be run as default. At the bottom of the file one can adjust the parameters and which experiments to run.

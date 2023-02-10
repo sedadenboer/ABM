@@ -1,20 +1,22 @@
+# sensitivity_analysis.py
+#
+# Course: ABM (2022/2023)
+#
+# Description: File to conduct the sensitivity
+# analysis for all of the parameters form the model.
+
 from SALib.sample import sobol as sobol_sample
 from SALib.analyze import sobol as sobol_analyze
-
 from mesa.batchrunner import batch_run
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
 import multiprocessing as mp
 import os
-
 from itertools import combinations
+from classes.model import Political_spectrum
+from save_results.output import get_output_path
 
-from model import Political_spectrum
-
-from visualize_beliefs import get_output_path
 
 def create_samples(problem: dict, num_samples: int, second_order: bool, save_data: bool = False, save_as: str = None):
     """Creates samples for the sobol analysis using saltelli's sampling scheme.
@@ -54,7 +56,7 @@ def create_samples(problem: dict, num_samples: int, second_order: bool, save_dat
     if save_data:
         df = pd.DataFrame(parameters_list)
         path = get_output_path()
-        df.to_csv(f"{path}/samples/{save_as}_samples.csv", index=False)
+        df.to_csv(f"{path}/{save_as}_samples.csv", index=False)
         
     return parameters_list
 
@@ -118,7 +120,7 @@ def sobol_run_samples(problem: dict,
     if from_data:
         # load the samples
         path = get_output_path()
-        df = pd.read_csv(f"{path}/samples/{save_as}_samples.csv")
+        df = pd.read_csv(f"{path}/{save_as}_samples.csv")
         samples = df.to_dict("records")
     else:
         # make sure samples are given
@@ -153,7 +155,7 @@ def sobol_run_samples(problem: dict,
             if save_data:
                 path = get_output_path()
                 user = os.environ.get('USER', os.environ.get('USERNAME'))
-                data.to_csv(f"{path}/run_data/{save_as}_{user}_{rep}.csv", index=False)
+                data.to_csv(f"{path}/{save_as}_{user}_{rep}.csv", index=False)
 
             print(data)
 
@@ -222,7 +224,7 @@ def sobol_analyze_data(problem: dict, from_file: bool=True, save_as: str=None, d
         for file in files:
             if file.startswith(save_as) and file.endswith(".csv"):
                 # get data
-                df = pd.read_csv(f"{path}/run_data/{file}")
+                df = pd.read_csv(f"{path}/{file}")
                 dfs.append(df)
 
         data = pd.concat(dfs)
@@ -237,7 +239,7 @@ def sobol_analyze_data(problem: dict, from_file: bool=True, save_as: str=None, d
     # first order
     plt.figure(dpi=300)
     plot_index(Si_polarization, problem['names'], '1', 'First order sensitivity')
-    plt.savefig(f"{path}/images/{save_as}_polarization_1.png")
+    plt.savefig(f"{path}/{save_as}_polarization_1.png")
     plt.show()
 
     # second order
@@ -248,13 +250,13 @@ def sobol_analyze_data(problem: dict, from_file: bool=True, save_as: str=None, d
         # plt.tight_layout()
         plt.tick_params(axis="y", labelsize=4)
         plt.tight_layout()
-        plt.savefig(f"{path}/images/{save_as}_polarization_2.png")
+        plt.savefig(f"{path}/{save_as}_polarization_2.png")
         plt.show()
 
     # total order
     plt.figure(dpi=300)
     plot_index(Si_polarization, problem['names'], 'T', 'Total order sensitivity')
-    plt.savefig(f"{path}/images/{save_as}_polarization_T.png")
+    plt.savefig(f"{path}/{save_as}_polarization_T.png")
     plt.show()
 
 

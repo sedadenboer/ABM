@@ -1,16 +1,25 @@
-from mesa import Model, Agent
+# model.py
+#
+# Course: ABM (2022/2023)
+#
+# Description: Contains the main model class representing
+# the political spectrum
+
+from mesa import Model
 from mesa.space import NetworkGrid, SingleGrid
 from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector
 import networkx as nx
 import numpy as np
 
-from agents import Wappie
+from .agents import Wappie
+
 
 class Political_spectrum(Model):
 
     network_types = ["BA", "idealised", "erdos-renyi", "complete"]
-
+    MEASURE_STEPS = 2
+    
     def __init__(
         self,
         width: int = 20,
@@ -164,8 +173,8 @@ class Political_spectrum(Model):
         Returns:
             float: The polarisation in the model.
         """
-        # only measure every 100 steps
-        if self.num_steps % 100 != 0:
+        # only measure every N steps
+        if self.num_steps % self.MEASURE_STEPS != 0:
             return
         
         polarization = []
@@ -189,6 +198,7 @@ class Political_spectrum(Model):
         self.schedule.step()
         self.num_steps += 1
         self.datacollector.collect(self)
+
 
 if __name__ == "__main__":
     # set parameters for Gaussian distribution

@@ -179,7 +179,6 @@ poetry.toml
 output_files/*/*
 !output_files/*/README.md
 !output_files/*/sensitivity_analysis*
-!output_files/*/experimental_results
 
 # mac stuff
 .DS_Store

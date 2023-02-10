@@ -1,22 +1,31 @@
+# visualize_beliefs.py
+#
+# Course: ABM (2022/2023)
+#
+# Description: File to create plots to visualize the
+# opinion distribution of the agents.
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import datetime
-import os
-from pathlib import Path
-import numpy as np
+from classes.model import Political_spectrum
+import time
+from save_results.output import get_output_path
+timestr = time.strftime("%Y%m%d-%H%M%S")
+output_path = get_output_path()
 
-from model import Political_spectrum
-
-def get_output_path():
-    path = os.path.abspath(__file__)
-    output_path = Path(path).parent
-    # move to the parent if still in the code directory
-    if os.path.split(output_path)[1] == "code":
-        output_path = output_path.parent
-    output_path = output_path / "output_files"
-    return output_path
 
 def get_beliefs(model: Political_spectrum):
+    """
+    Retrieves all of the beliefs from the agents in the model.
+
+    Args:
+        model: political spectrum model
+
+    Returns: both types of beliefs
+    """
     x = []
     y = []
     for agent_id in model.agents:
@@ -24,9 +33,10 @@ def get_beliefs(model: Political_spectrum):
         belief_x, belief_y = agent.beliefs
         x.append(belief_x)
         y.append(belief_y)
+
     return x, y
 
-def plot_beliefs(model: Political_spectrum, run_id):
+def plot_beliefs(model: Political_spectrum):
     """Plots the current state of beliefs of the agent in the model.
 
     Args:
@@ -43,53 +53,36 @@ def plot_beliefs(model: Political_spectrum, run_id):
     plt.title("Distribution of agents' beliefs")
     num_steps = model.num_steps
 
-    output_path = get_output_path()
-    plt.savefig(f"{output_path}/images/{run_id}_scatterplot_step{num_steps}.png")
+    plt.savefig(f"{output_path}/{timestr}_scatterplot_step{num_steps}.png")
 
-def animate_beliefs(model: Political_spectrum, run_id: int):
+def animate_beliefs(model: Political_spectrum):
+    """
+    Make an animation of the beliefs over the course of time.
+
+    Args:
+        model: political spectrum model
+    """
     assert model.num_steps == 0
 
     x, y = get_beliefs(model)
 
     # make animation
     fig, ax = plt.subplots(dpi=300)
-    # ax.set_xlim([0.0, 1.0])
-    # ax.set_ylim([0.0, 1.0])
-
-    # points = [(x[i], y[i]) for i in range(len(x))]
     colors = [i / 100 for i in range(len(x))]
     scat = ax.scatter(x, y, c=colors, cmap="hsv")
-    # scat = ax.scatter(points)
 
     def animate(i):
         model.step()
         x, y = get_beliefs(model)
-        # print(x)
         points = [(x[j], y[j]) for j in range(len(x))]
-
-        # scat.set_offsets((x, y))
         scat.set_offsets(points)
 
     ani = animation.FuncAnimation(fig, animate, frames=10, interval=10)
-
     writer = animation.PillowWriter(fps=15,
                                     metadata=dict(artist='Me'),
                                     bitrate=1800)
-    path = get_output_path()
-    ani.save(f'{path}/images/{run_id}_scatter.gif', writer=writer)
 
-def gradient_beliefs(model: Political_spectrum):
-    x, y = get_beliefs(model)
-    print(x)
-    print(y)
-    print()
-
-    Z = np.random.rand(3, 5)
-    print()
-    print(Z)
-    plt.figure()
-    plt.pcolor(Z)
-    plt.show()
+    ani.save(f"{output_path}/{timestr}_scatter.gif", writer=writer)
     
 
 if __name__ == "__main__":
@@ -102,19 +95,6 @@ if __name__ == "__main__":
                                 sigma_norm=0.2,
                                 network_type="BA",
                                 grid_preference=0.5)
-    run_id = datetime.datetime.now()
-    plot_beliefs(model, run_id)
 
-    # for _ in range(5):
-    #     for _ in range(100):
-    #         model.step()
-    #     plot_beliefs(model, run_id)
-
-    # animate_beliefs(model, run_id)
-
-    # gradient_beliefs(model)
-
-
-
-
-
+    plot_beliefs(model)
+    animate_beliefs(model)

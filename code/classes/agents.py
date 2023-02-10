@@ -1,5 +1,11 @@
+# agents.py
+#
+# Course: ABM (2022/2023)
+#
+# Description: Contains the class for an agent
+# in the political spectrum model.
+
 from mesa import Agent, Model
-from typing import List
 from scipy.spatial import distance
 import numpy as np
 import copy
