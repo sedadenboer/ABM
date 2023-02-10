@@ -18,7 +18,7 @@ from .agents import Wappie
 class Political_spectrum(Model):
 
     network_types = ["BA", "idealised", "erdos-renyi", "complete"]
-    MEASURE_STEPS = 2
+    MEASURE_STEPS = 50
     
     def __init__(
         self,
