@@ -16,4 +16,4 @@ To run any of the files, move to the code folder. Any output will be generated i
 - Any visualisations are contained in the visualisation folder.
     - Run visualize_politics.py for a visualization of the model.
     - Run visualize_beliefs.py for a visualization of the agents beliefs changing over time.
-- Experiments can be run with experiments.py. Note that all of them will be run as default. At the bottom of the file one can adjust the parameters and which experiments to run.
+- Experiments can be run with experiments.py. Note that all of them will be run as default. At the bottom of the file one can adjust the parameters and which experiments to run. A few parameters that are fixed during the experiments can be changed in get_polarization() if needed.
